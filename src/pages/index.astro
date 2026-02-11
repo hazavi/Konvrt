@@ -1,0 +1,1694 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import DropZone from "../components/DropZone.astro";
+import FileList from "../components/FileList.astro";
+import ConvertBar from "../components/ConvertBar.astro";
+import ToolsPanel from "../components/ToolsPanel.astro";
+---
+
+<Layout>
+  <div id="app">
+    <Header />
+    <main id="main-content">
+      <!-- Convert/Compress view -->
+      <div id="view-convert">
+        <DropZone />
+        <FileList />
+      </div>
+      <!-- Tools view -->
+      <ToolsPanel />
+    </main>
+    <ConvertBar />
+  </div>
+</Layout>
+
+<style>
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 20px 12px;
+    gap: 12px;
+    overflow-y: auto;
+  }
+  #view-convert {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+</style>
+
+<script>
+  // ─── Types ──────────────────────────────────────────────────
+  interface FileEntry {
+    id: string;
+    path: string;
+    name: string;
+    ext: string;
+    type: "video" | "audio" | "image" | "pdf";
+    size: number;
+    progress: number;
+    status: "pending" | "converting" | "done" | "error";
+    error?: string;
+    outputPath?: string;
+    previewUrl?: string;
+  }
+
+  // ─── Constants ──────────────────────────────────────────────
+  const VIDEO_EXTS = ["mp4", "mkv", "avi", "mov", "webm", "flv", "wmv"];
+  const AUDIO_EXTS = ["mp3", "wav", "ogg", "flac", "aac", "wma", "m4a"];
+  const IMAGE_EXTS = [
+    "jpg",
+    "jpeg",
+    "png",
+    "gif",
+    "bmp",
+    "tiff",
+    "webp",
+    "svg",
+    "avif",
+    "heic",
+  ];
+  const PDF_EXTS = ["pdf"];
+
+  const FORMAT_OPTIONS: Record<string, string[]> = {
+    video: ["mp4", "mkv", "avi", "mov", "webm", "flv", "wmv"],
+    audio: ["mp3", "wav", "ogg", "flac", "aac", "m4a", "wma"],
+    image: ["jpg", "png", "webp", "avif", "gif", "bmp", "tiff", "heif"],
+    pdf: ["png", "jpg", "webp", "avif", "tiff", "gif", "bmp"],
+  };
+
+  // Converter tool entries
+  const CONVERT_TOOLS = [
+    // Video
+    {
+      label: "Video Converter",
+      desc: "Any video format",
+      cat: "video",
+      icon: "🎬",
+      type: "video",
+    },
+    {
+      label: "MP4 Converter",
+      desc: "Convert to MP4",
+      cat: "video",
+      icon: "MP4",
+      type: "video",
+      format: "mp4",
+    },
+    {
+      label: "MKV Converter",
+      desc: "Convert to MKV",
+      cat: "video",
+      icon: "MKV",
+      type: "video",
+      format: "mkv",
+    },
+    {
+      label: "AVI Converter",
+      desc: "Convert to AVI",
+      cat: "video",
+      icon: "AVI",
+      type: "video",
+      format: "avi",
+    },
+    {
+      label: "MOV Converter",
+      desc: "Convert to MOV",
+      cat: "video",
+      icon: "MOV",
+      type: "video",
+      format: "mov",
+    },
+    {
+      label: "WEBM Converter",
+      desc: "Convert to WebM",
+      cat: "video",
+      icon: "WBM",
+      type: "video",
+      format: "webm",
+    },
+    {
+      label: "FLV Converter",
+      desc: "Convert to FLV",
+      cat: "video",
+      icon: "FLV",
+      type: "video",
+      format: "flv",
+    },
+    {
+      label: "WMV Converter",
+      desc: "Convert to WMV",
+      cat: "video",
+      icon: "WMV",
+      type: "video",
+      format: "wmv",
+    },
+    {
+      label: "MOV to MP4",
+      desc: "Apple to MP4",
+      cat: "video",
+      icon: "MOV",
+      type: "video",
+      format: "mp4",
+    },
+    {
+      label: "AVI to MP4",
+      desc: "AVI to MP4",
+      cat: "video",
+      icon: "AVI",
+      type: "video",
+      format: "mp4",
+    },
+    {
+      label: "WEBM to MP4",
+      desc: "WebM to MP4",
+      cat: "video",
+      icon: "WBM",
+      type: "video",
+      format: "mp4",
+    },
+    {
+      label: "MKV to MP4",
+      desc: "Matroska to MP4",
+      cat: "video",
+      icon: "MKV",
+      type: "video",
+      format: "mp4",
+    },
+    {
+      label: "FLV to MP4",
+      desc: "Flash to MP4",
+      cat: "video",
+      icon: "FLV",
+      type: "video",
+      format: "mp4",
+    },
+    {
+      label: "WMV to MP4",
+      desc: "WMV to MP4",
+      cat: "video",
+      icon: "WMV",
+      type: "video",
+      format: "mp4",
+    },
+    {
+      label: "MP4 to MOV",
+      desc: "MP4 to Apple MOV",
+      cat: "video",
+      icon: "MP4",
+      type: "video",
+      format: "mov",
+    },
+    {
+      label: "MP4 to WEBM",
+      desc: "MP4 to WebM",
+      cat: "video",
+      icon: "MP4",
+      type: "video",
+      format: "webm",
+    },
+    {
+      label: "MP4 to AVI",
+      desc: "MP4 to AVI",
+      cat: "video",
+      icon: "MP4",
+      type: "video",
+      format: "avi",
+    },
+    {
+      label: "MP4 to MKV",
+      desc: "MP4 to Matroska",
+      cat: "video",
+      icon: "MP4",
+      type: "video",
+      format: "mkv",
+    },
+    // Audio
+    {
+      label: "Audio Converter",
+      desc: "Any audio format",
+      cat: "audio",
+      icon: "🎵",
+      type: "audio",
+    },
+    {
+      label: "MP3 Converter",
+      desc: "Convert to MP3",
+      cat: "audio",
+      icon: "MP3",
+      type: "audio",
+      format: "mp3",
+    },
+    {
+      label: "WAV Converter",
+      desc: "Convert to WAV",
+      cat: "audio",
+      icon: "WAV",
+      type: "audio",
+      format: "wav",
+    },
+    {
+      label: "OGG Converter",
+      desc: "Convert to OGG",
+      cat: "audio",
+      icon: "OGG",
+      type: "audio",
+      format: "ogg",
+    },
+    {
+      label: "FLAC Converter",
+      desc: "Convert to FLAC",
+      cat: "audio",
+      icon: "FLC",
+      type: "audio",
+      format: "flac",
+    },
+    {
+      label: "AAC Converter",
+      desc: "Convert to AAC",
+      cat: "audio",
+      icon: "AAC",
+      type: "audio",
+      format: "aac",
+    },
+    {
+      label: "M4A Converter",
+      desc: "Convert to M4A",
+      cat: "audio",
+      icon: "M4A",
+      type: "audio",
+      format: "m4a",
+    },
+    {
+      label: "WMA Converter",
+      desc: "Convert to WMA",
+      cat: "audio",
+      icon: "WMA",
+      type: "audio",
+      format: "wma",
+    },
+    {
+      label: "MP4 to MP3",
+      desc: "Extract audio",
+      cat: "audio",
+      icon: "♪",
+      type: "video",
+      format: "mp3",
+    },
+    {
+      label: "Video to MP3",
+      desc: "Extract audio",
+      cat: "audio",
+      icon: "♫",
+      type: "video",
+      format: "mp3",
+    },
+    {
+      label: "Video to WAV",
+      desc: "Extract lossless",
+      cat: "audio",
+      icon: "♫",
+      type: "video",
+      format: "wav",
+    },
+    {
+      label: "WAV to MP3",
+      desc: "WAV to MP3",
+      cat: "audio",
+      icon: "WAV",
+      type: "audio",
+      format: "mp3",
+    },
+    {
+      label: "MP3 to WAV",
+      desc: "MP3 to WAV",
+      cat: "audio",
+      icon: "MP3",
+      type: "audio",
+      format: "wav",
+    },
+    {
+      label: "MP3 to OGG",
+      desc: "MP3 to OGG",
+      cat: "audio",
+      icon: "MP3",
+      type: "audio",
+      format: "ogg",
+    },
+    {
+      label: "MP3 to AAC",
+      desc: "MP3 to AAC",
+      cat: "audio",
+      icon: "MP3",
+      type: "audio",
+      format: "aac",
+    },
+    {
+      label: "MP3 to FLAC",
+      desc: "MP3 to Lossless",
+      cat: "audio",
+      icon: "MP3",
+      type: "audio",
+      format: "flac",
+    },
+    {
+      label: "MP3 to M4A",
+      desc: "MP3 to M4A",
+      cat: "audio",
+      icon: "MP3",
+      type: "audio",
+      format: "m4a",
+    },
+    {
+      label: "FLAC to MP3",
+      desc: "Lossless to MP3",
+      cat: "audio",
+      icon: "FLC",
+      type: "audio",
+      format: "mp3",
+    },
+    {
+      label: "FLAC to WAV",
+      desc: "FLAC to WAV",
+      cat: "audio",
+      icon: "FLC",
+      type: "audio",
+      format: "wav",
+    },
+    {
+      label: "OGG to MP3",
+      desc: "OGG to MP3",
+      cat: "audio",
+      icon: "OGG",
+      type: "audio",
+      format: "mp3",
+    },
+    {
+      label: "AAC to MP3",
+      desc: "AAC to MP3",
+      cat: "audio",
+      icon: "AAC",
+      type: "audio",
+      format: "mp3",
+    },
+    {
+      label: "M4A to MP3",
+      desc: "M4A to MP3",
+      cat: "audio",
+      icon: "M4A",
+      type: "audio",
+      format: "mp3",
+    },
+    {
+      label: "WMA to MP3",
+      desc: "WMA to MP3",
+      cat: "audio",
+      icon: "WMA",
+      type: "audio",
+      format: "mp3",
+    },
+    // Image
+    {
+      label: "Image Converter",
+      desc: "Any image format",
+      cat: "image",
+      icon: "🖼️",
+      type: "image",
+    },
+    {
+      label: "JPG Converter",
+      desc: "Convert to JPEG",
+      cat: "image",
+      icon: "JPG",
+      type: "image",
+      format: "jpg",
+    },
+    {
+      label: "PNG Converter",
+      desc: "Convert to PNG",
+      cat: "image",
+      icon: "PNG",
+      type: "image",
+      format: "png",
+    },
+    {
+      label: "WEBP Converter",
+      desc: "Convert to WebP",
+      cat: "image",
+      icon: "WBP",
+      type: "image",
+      format: "webp",
+    },
+    {
+      label: "AVIF Converter",
+      desc: "Convert to AVIF",
+      cat: "image",
+      icon: "AVF",
+      type: "image",
+      format: "avif",
+    },
+    {
+      label: "BMP Converter",
+      desc: "Convert to BMP",
+      cat: "image",
+      icon: "BMP",
+      type: "image",
+      format: "bmp",
+    },
+    {
+      label: "TIFF Converter",
+      desc: "Convert to TIFF",
+      cat: "image",
+      icon: "TIF",
+      type: "image",
+      format: "tiff",
+    },
+    {
+      label: "WEBP to PNG",
+      desc: "WebP to PNG",
+      cat: "image",
+      icon: "WBP",
+      type: "image",
+      format: "png",
+    },
+    {
+      label: "WEBP to JPG",
+      desc: "WebP to JPEG",
+      cat: "image",
+      icon: "WBP",
+      type: "image",
+      format: "jpg",
+    },
+    {
+      label: "WEBP to AVIF",
+      desc: "WebP to AVIF",
+      cat: "image",
+      icon: "WBP",
+      type: "image",
+      format: "avif",
+    },
+    {
+      label: "PNG to JPG",
+      desc: "PNG to JPEG",
+      cat: "image",
+      icon: "PNG",
+      type: "image",
+      format: "jpg",
+    },
+    {
+      label: "PNG to WEBP",
+      desc: "PNG to WebP",
+      cat: "image",
+      icon: "PNG",
+      type: "image",
+      format: "webp",
+    },
+    {
+      label: "PNG to AVIF",
+      desc: "PNG to AVIF",
+      cat: "image",
+      icon: "PNG",
+      type: "image",
+      format: "avif",
+    },
+    {
+      label: "PNG to BMP",
+      desc: "PNG to Bitmap",
+      cat: "image",
+      icon: "PNG",
+      type: "image",
+      format: "bmp",
+    },
+    {
+      label: "JPG to PNG",
+      desc: "JPEG to PNG",
+      cat: "image",
+      icon: "JPG",
+      type: "image",
+      format: "png",
+    },
+    {
+      label: "JPG to WEBP",
+      desc: "JPEG to WebP",
+      cat: "image",
+      icon: "JPG",
+      type: "image",
+      format: "webp",
+    },
+    {
+      label: "JPG to AVIF",
+      desc: "JPEG to AVIF",
+      cat: "image",
+      icon: "JPG",
+      type: "image",
+      format: "avif",
+    },
+    {
+      label: "JPG to BMP",
+      desc: "JPEG to Bitmap",
+      cat: "image",
+      icon: "JPG",
+      type: "image",
+      format: "bmp",
+    },
+    {
+      label: "JPG to TIFF",
+      desc: "JPEG to TIFF",
+      cat: "image",
+      icon: "JPG",
+      type: "image",
+      format: "tiff",
+    },
+    {
+      label: "AVIF to JPG",
+      desc: "AVIF to JPEG",
+      cat: "image",
+      icon: "AVF",
+      type: "image",
+      format: "jpg",
+    },
+    {
+      label: "AVIF to PNG",
+      desc: "AVIF to PNG",
+      cat: "image",
+      icon: "AVF",
+      type: "image",
+      format: "png",
+    },
+    {
+      label: "AVIF to WEBP",
+      desc: "AVIF to WebP",
+      cat: "image",
+      icon: "AVF",
+      type: "image",
+      format: "webp",
+    },
+    {
+      label: "HEIC to JPG",
+      desc: "Apple HEIC to JPEG",
+      cat: "image",
+      icon: "HIC",
+      type: "image",
+      format: "jpg",
+    },
+    {
+      label: "HEIC to PNG",
+      desc: "Apple HEIC to PNG",
+      cat: "image",
+      icon: "HIC",
+      type: "image",
+      format: "png",
+    },
+    {
+      label: "HEIC to WEBP",
+      desc: "Apple HEIC to WebP",
+      cat: "image",
+      icon: "HIC",
+      type: "image",
+      format: "webp",
+    },
+    {
+      label: "BMP to PNG",
+      desc: "Bitmap to PNG",
+      cat: "image",
+      icon: "BMP",
+      type: "image",
+      format: "png",
+    },
+    {
+      label: "BMP to JPG",
+      desc: "Bitmap to JPEG",
+      cat: "image",
+      icon: "BMP",
+      type: "image",
+      format: "jpg",
+    },
+    {
+      label: "TIFF to JPG",
+      desc: "TIFF to JPEG",
+      cat: "image",
+      icon: "TIF",
+      type: "image",
+      format: "jpg",
+    },
+    {
+      label: "TIFF to PNG",
+      desc: "TIFF to PNG",
+      cat: "image",
+      icon: "TIF",
+      type: "image",
+      format: "png",
+    },
+    {
+      label: "SVG to PNG",
+      desc: "SVG to PNG",
+      cat: "image",
+      icon: "SVG",
+      type: "image",
+      format: "png",
+    },
+    {
+      label: "SVG to JPG",
+      desc: "SVG to JPEG",
+      cat: "image",
+      icon: "SVG",
+      type: "image",
+      format: "jpg",
+    },
+    {
+      label: "SVG to WEBP",
+      desc: "SVG to WebP",
+      cat: "image",
+      icon: "SVG",
+      type: "image",
+      format: "webp",
+    },
+    {
+      label: "GIF to PNG",
+      desc: "GIF to PNG",
+      cat: "image",
+      icon: "GIF",
+      type: "image",
+      format: "png",
+    },
+    {
+      label: "GIF to JPG",
+      desc: "GIF to JPEG",
+      cat: "image",
+      icon: "GIF",
+      type: "image",
+      format: "jpg",
+    },
+    // PDF
+    {
+      label: "PDF to PNG",
+      desc: "PDF pages to PNG",
+      cat: "pdf",
+      icon: "PDF",
+      type: "pdf",
+      format: "png",
+    },
+    {
+      label: "PDF to JPG",
+      desc: "PDF pages to JPEG",
+      cat: "pdf",
+      icon: "PDF",
+      type: "pdf",
+      format: "jpg",
+    },
+    {
+      label: "PDF to WEBP",
+      desc: "PDF pages to WebP",
+      cat: "pdf",
+      icon: "PDF",
+      type: "pdf",
+      format: "webp",
+    },
+    {
+      label: "PDF to AVIF",
+      desc: "PDF pages to AVIF",
+      cat: "pdf",
+      icon: "PDF",
+      type: "pdf",
+      format: "avif",
+    },
+    {
+      label: "PDF to TIFF",
+      desc: "PDF pages to TIFF",
+      cat: "pdf",
+      icon: "PDF",
+      type: "pdf",
+      format: "tiff",
+    },
+    {
+      label: "PDF to BMP",
+      desc: "PDF pages to BMP",
+      cat: "pdf",
+      icon: "PDF",
+      type: "pdf",
+      format: "bmp",
+    },
+    {
+      label: "PDF to GIF",
+      desc: "PDF pages to GIF",
+      cat: "pdf",
+      icon: "PDF",
+      type: "pdf",
+      format: "gif",
+    },
+    {
+      label: "Image to PDF",
+      desc: "Any image to PDF",
+      cat: "pdf",
+      icon: "PDF",
+      type: "image",
+      format: "pdf",
+    },
+    {
+      label: "JPG to PDF",
+      desc: "JPEG to PDF",
+      cat: "pdf",
+      icon: "PDF",
+      type: "image",
+      format: "pdf",
+    },
+    {
+      label: "PNG to PDF",
+      desc: "PNG to PDF",
+      cat: "pdf",
+      icon: "PDF",
+      type: "image",
+      format: "pdf",
+    },
+    {
+      label: "WEBP to PDF",
+      desc: "WebP to PDF",
+      cat: "pdf",
+      icon: "PDF",
+      type: "image",
+      format: "pdf",
+    },
+    {
+      label: "AVIF to PDF",
+      desc: "AVIF to PDF",
+      cat: "pdf",
+      icon: "PDF",
+      type: "image",
+      format: "pdf",
+    },
+    {
+      label: "BMP to PDF",
+      desc: "Bitmap to PDF",
+      cat: "pdf",
+      icon: "PDF",
+      type: "image",
+      format: "pdf",
+    },
+    {
+      label: "TIFF to PDF",
+      desc: "TIFF to PDF",
+      cat: "pdf",
+      icon: "PDF",
+      type: "image",
+      format: "pdf",
+    },
+    // GIF
+    {
+      label: "Video to GIF",
+      desc: "Create animated GIF",
+      cat: "gif",
+      icon: "GIF",
+      type: "video",
+      format: "gif",
+    },
+    {
+      label: "MP4 to GIF",
+      desc: "MP4 to GIF",
+      cat: "gif",
+      icon: "GIF",
+      type: "video",
+      format: "gif",
+    },
+    {
+      label: "WEBM to GIF",
+      desc: "WebM to GIF",
+      cat: "gif",
+      icon: "GIF",
+      type: "video",
+      format: "gif",
+    },
+    {
+      label: "MOV to GIF",
+      desc: "MOV to GIF",
+      cat: "gif",
+      icon: "GIF",
+      type: "video",
+      format: "gif",
+    },
+    {
+      label: "AVI to GIF",
+      desc: "AVI to GIF",
+      cat: "gif",
+      icon: "GIF",
+      type: "video",
+      format: "gif",
+    },
+    {
+      label: "MKV to GIF",
+      desc: "MKV to GIF",
+      cat: "gif",
+      icon: "GIF",
+      type: "video",
+      format: "gif",
+    },
+    {
+      label: "FLV to GIF",
+      desc: "FLV to GIF",
+      cat: "gif",
+      icon: "GIF",
+      type: "video",
+      format: "gif",
+    },
+    {
+      label: "WMV to GIF",
+      desc: "WMV to GIF",
+      cat: "gif",
+      icon: "GIF",
+      type: "video",
+      format: "gif",
+    },
+    {
+      label: "GIF to MP4",
+      desc: "GIF to video",
+      cat: "gif",
+      icon: "MP4",
+      type: "image",
+      format: "mp4",
+    },
+    {
+      label: "GIF to WEBM",
+      desc: "GIF to WebM",
+      cat: "gif",
+      icon: "WBM",
+      type: "image",
+      format: "webm",
+    },
+  ];
+
+  const COMPRESS_TOOLS = [
+    {
+      label: "Video Compressor",
+      desc: "Reduce any video size",
+      cat: "video",
+      icon: "🎬",
+      type: "video",
+    },
+    {
+      label: "MP4 Compressor",
+      desc: "Shrink MP4 files",
+      cat: "video",
+      icon: "MP4",
+      type: "video",
+      format: "mp4",
+    },
+    {
+      label: "MKV Compressor",
+      desc: "Shrink MKV files",
+      cat: "video",
+      icon: "MKV",
+      type: "video",
+      format: "mkv",
+    },
+    {
+      label: "MOV Compressor",
+      desc: "Shrink MOV files",
+      cat: "video",
+      icon: "MOV",
+      type: "video",
+      format: "mov",
+    },
+    {
+      label: "WEBM Compressor",
+      desc: "Shrink WebM files",
+      cat: "video",
+      icon: "WBM",
+      type: "video",
+      format: "webm",
+    },
+    {
+      label: "AVI Compressor",
+      desc: "Shrink AVI files",
+      cat: "video",
+      icon: "AVI",
+      type: "video",
+      format: "avi",
+    },
+    {
+      label: "Audio Compressor",
+      desc: "Reduce any audio size",
+      cat: "audio",
+      icon: "🎵",
+      type: "audio",
+    },
+    {
+      label: "MP3 Compressor",
+      desc: "Shrink MP3 files",
+      cat: "audio",
+      icon: "MP3",
+      type: "audio",
+      format: "mp3",
+    },
+    {
+      label: "WAV Compressor",
+      desc: "Shrink WAV files",
+      cat: "audio",
+      icon: "WAV",
+      type: "audio",
+      format: "wav",
+    },
+    {
+      label: "FLAC Compressor",
+      desc: "Shrink FLAC files",
+      cat: "audio",
+      icon: "FLC",
+      type: "audio",
+      format: "flac",
+    },
+    {
+      label: "OGG Compressor",
+      desc: "Shrink OGG files",
+      cat: "audio",
+      icon: "OGG",
+      type: "audio",
+      format: "ogg",
+    },
+    {
+      label: "AAC Compressor",
+      desc: "Shrink AAC files",
+      cat: "audio",
+      icon: "AAC",
+      type: "audio",
+      format: "aac",
+    },
+    {
+      label: "M4A Compressor",
+      desc: "Shrink M4A files",
+      cat: "audio",
+      icon: "M4A",
+      type: "audio",
+      format: "m4a",
+    },
+    {
+      label: "Image Compressor",
+      desc: "Reduce any image size",
+      cat: "image",
+      icon: "🖼️",
+      type: "image",
+    },
+    {
+      label: "JPEG Compressor",
+      desc: "Shrink JPEG files",
+      cat: "image",
+      icon: "JPG",
+      type: "image",
+      format: "jpg",
+    },
+    {
+      label: "PNG Compressor",
+      desc: "Shrink PNG files",
+      cat: "image",
+      icon: "PNG",
+      type: "image",
+      format: "png",
+    },
+    {
+      label: "WEBP Compressor",
+      desc: "Shrink WebP files",
+      cat: "image",
+      icon: "WBP",
+      type: "image",
+      format: "webp",
+    },
+    {
+      label: "AVIF Compressor",
+      desc: "Shrink AVIF files",
+      cat: "image",
+      icon: "AVF",
+      type: "image",
+      format: "avif",
+    },
+    {
+      label: "TIFF Compressor",
+      desc: "Shrink TIFF files",
+      cat: "image",
+      icon: "TIF",
+      type: "image",
+      format: "tiff",
+    },
+    {
+      label: "GIF Compressor",
+      desc: "Reduce GIF size",
+      cat: "gif",
+      icon: "GIF",
+      type: "image",
+      format: "gif",
+    },
+  ];
+
+  // ─── State ──────────────────────────────────────────────────
+  let files: FileEntry[] = [];
+  let outputDir = "";
+  let targetFormat = "";
+  let quality = 80;
+  let isConverting = false;
+  let selectedType: "video" | "audio" | "image" | "pdf" | null = null;
+  let currentTab: "convert" | "compress" | "tools" = "convert";
+  let conversionMode: "convert" | "compress" = "convert";
+
+  // ─── Helpers ────────────────────────────────────────────────
+  function detectType(name: string): FileEntry["type"] | null {
+    const ext = name.split(".").pop()?.toLowerCase() || "";
+    if (VIDEO_EXTS.includes(ext)) return "video";
+    if (AUDIO_EXTS.includes(ext)) return "audio";
+    if (IMAGE_EXTS.includes(ext)) return "image";
+    if (PDF_EXTS.includes(ext)) return "pdf";
+    return null;
+  }
+
+  function getExt(name: string): string {
+    return name.split(".").pop()?.toLowerCase() || "";
+  }
+
+  function escapeHtml(str: string): string {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function truncatePath(p: string): string {
+    if (p.length <= 30) return p;
+    return "…" + p.slice(-28);
+  }
+
+  function formatSize(bytes: number): string {
+    if (bytes === 0) return "";
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+    if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + " MB";
+    return (bytes / 1073741824).toFixed(2) + " GB";
+  }
+
+  function isPreviewable(type: string, ext: string): boolean {
+    if (type === "image") return true;
+    if (type === "video") return true;
+    return false;
+  }
+
+  function getPreviewUrl(filePath: string): string {
+    // Electron can load local files via file:// protocol
+    return "file:///" + filePath.replace(/\\/g, "/");
+  }
+
+  // ─── Render ─────────────────────────────────────────────────
+  function render() {
+    renderTabs();
+    renderViews();
+    renderFileList();
+    renderConvertBar();
+    renderDropZone();
+    renderToolsGrids();
+  }
+
+  function renderTabs() {
+    document.querySelectorAll("#nav-tabs .tab").forEach((btn) => {
+      const tab = (btn as HTMLElement).dataset.tab;
+      btn.classList.toggle("active", tab === currentTab);
+    });
+  }
+
+  function renderViews() {
+    const convertView = document.getElementById("view-convert")!;
+    const toolsPanel = document.getElementById("tools-panel")!;
+
+    if (currentTab === "tools") {
+      convertView.style.display = "none";
+      toolsPanel.style.display = "block";
+    } else {
+      convertView.style.display = "flex";
+      toolsPanel.style.display = "none";
+    }
+  }
+
+  function renderDropZone() {
+    const zone = document.getElementById("dropzone")!;
+    const empty = document.getElementById("empty-state")!;
+    if (files.length > 0) {
+      zone.classList.add("has-files");
+      empty.style.display = "none";
+    } else {
+      zone.classList.remove("has-files");
+      empty.style.display = "flex";
+    }
+  }
+
+  // ─── File List with previews ────────────────────────────────
+  function renderFileList() {
+    const container = document.getElementById("file-list")!;
+    if (files.length === 0) {
+      container.innerHTML = "";
+      return;
+    }
+
+    container.innerHTML = files
+      .map((f) => {
+        const previewable = isPreviewable(f.type, f.ext);
+        const previewUrl = getPreviewUrl(f.path);
+        const playIcon = `<div class="play-overlay"><svg viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>`;
+
+        let thumbHtml = "";
+        if (f.type === "image") {
+          thumbHtml = `<div class="file-thumb" data-preview="${escapeHtml(f.path)}" data-type="${f.type}"><img src="${previewUrl}" alt="" loading="lazy" />${playIcon}</div>`;
+        } else if (f.type === "video") {
+          thumbHtml = `<div class="file-thumb" data-preview="${escapeHtml(f.path)}" data-type="${f.type}"><video src="${previewUrl}" muted preload="metadata"></video>${playIcon}</div>`;
+        } else if (f.type === "pdf") {
+          thumbHtml = `<div class="file-thumb"><span class="thumb-icon" style="font-size:13px;font-weight:800;color:var(--pdf-color);">PDF</span></div>`;
+        } else {
+          thumbHtml = `<div class="file-thumb"><span class="thumb-icon">🎵</span></div>`;
+        }
+
+        let statusHtml = "";
+        if (f.status === "converting") {
+          statusHtml = `
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${f.progress}%"></div></div>
+          <span class="progress-pct">${f.progress}%</span>`;
+        } else if (f.status === "done") {
+          statusHtml = `<span class="status-icon done">✓</span>`;
+        } else if (f.status === "error") {
+          statusHtml = `<span class="status-icon error" title="${escapeHtml(f.error || "")}">✕</span>`;
+        }
+
+        return `
+        <div class="file-card ${f.status}" data-id="${f.id}">
+          ${thumbHtml}
+          <div class="file-details">
+            <div class="file-name-row">
+              <span class="file-name">${escapeHtml(f.name)}</span>
+              <span class="file-type-badge ${f.type}">${f.type}</span>
+            </div>
+            <span class="file-meta">${f.ext.toUpperCase()}${f.size ? " · " + formatSize(f.size) : ""}</span>
+          </div>
+          <div class="file-right">
+            ${statusHtml}
+            <button class="remove-btn" data-id="${f.id}" ${isConverting ? "disabled" : ""} title="Remove">×</button>
+          </div>
+        </div>`;
+      })
+      .join("");
+
+    // Attach events
+    container.querySelectorAll(".remove-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        files = files.filter((f) => f.id !== (btn as HTMLElement).dataset.id);
+        updateSelectedType();
+        render();
+      });
+    });
+
+    // Preview on thumb click
+    container.querySelectorAll(".file-thumb[data-preview]").forEach((thumb) => {
+      thumb.addEventListener("click", () => {
+        const path = (thumb as HTMLElement).dataset.preview!;
+        const type = (thumb as HTMLElement).dataset.type!;
+        openPreview(path, type);
+      });
+    });
+  }
+
+  // ─── Preview Modal ──────────────────────────────────────────
+  function openPreview(filePath: string, type: string) {
+    const modal = document.getElementById("preview-modal")!;
+    const body = document.getElementById("preview-body")!;
+    const info = document.getElementById("preview-info")!;
+    const url = getPreviewUrl(filePath);
+    const name = filePath.split(/[\\/]/).pop() || "";
+    const file = files.find((f) => f.path === filePath);
+    const sizeStr = file && file.size ? ` — ${formatSize(file.size)}` : "";
+
+    if (type === "image") {
+      body.innerHTML = `<img src="${url}" alt="${escapeHtml(name)}" />`;
+    } else if (type === "video") {
+      body.innerHTML = `<video src="${url}" controls autoplay style="outline:none;"></video>`;
+    }
+    info.innerHTML = `<span class="preview-name">${escapeHtml(name)}</span>${sizeStr ? `<span class="preview-size">${sizeStr}</span>` : ""}`;
+    modal.style.display = "flex";
+  }
+
+  function closePreview() {
+    const modal = document.getElementById("preview-modal")!;
+    const body = document.getElementById("preview-body")!;
+    modal.style.display = "none";
+    body.innerHTML = "";
+  }
+
+  // ─── Convert Bar ───────────────────────────────────────────
+  function renderConvertBar() {
+    const bar = document.getElementById("convert-bar")!;
+    const formatSelect = document.getElementById(
+      "format-select",
+    ) as HTMLSelectElement;
+    const qualitySlider = document.getElementById(
+      "quality-slider",
+    ) as HTMLInputElement;
+    const qualityLabel = document.getElementById("quality-value")!;
+    const convertBtn = document.getElementById(
+      "convert-btn",
+    ) as HTMLButtonElement;
+    const outputLabel = document.getElementById("output-dir-label")!;
+    const statsLabel = document.getElementById("stats-label")!;
+    const clearBtn = document.getElementById("clear-btn") as HTMLButtonElement;
+    const overallProgress = document.getElementById("overall-progress")!;
+    const modeField = document.getElementById("mode-field")!;
+
+    if (files.length === 0 || currentTab === "tools") {
+      bar.classList.add("hidden");
+      return;
+    }
+    bar.classList.remove("hidden");
+
+    // Stats
+    const doneCount = files.filter((f) => f.status === "done").length;
+    const errCount = files.filter((f) => f.status === "error").length;
+    statsLabel.textContent = `${files.length} file${files.length > 1 ? "s" : ""}${doneCount ? ` · ${doneCount} done` : ""}${errCount ? ` · ${errCount} err` : ""}`;
+
+    // Format options
+    if (
+      conversionMode === "convert" &&
+      selectedType &&
+      FORMAT_OPTIONS[selectedType]
+    ) {
+      const opts = FORMAT_OPTIONS[selectedType];
+      const current = formatSelect.value;
+      formatSelect.innerHTML = opts
+        .map(
+          (f) =>
+            `<option value="${f}" ${f === current ? "selected" : ""}>${f.toUpperCase()}</option>`,
+        )
+        .join("");
+      if (!opts.includes(current)) {
+        formatSelect.value = opts[0];
+        targetFormat = opts[0];
+      }
+      formatSelect.parentElement!.style.display = "flex";
+    } else if (conversionMode === "compress") {
+      formatSelect.parentElement!.style.display = "none";
+    }
+
+    qualitySlider.value = String(quality);
+    qualityLabel.textContent = `${quality}%`;
+    outputLabel.textContent = outputDir
+      ? truncatePath(outputDir)
+      : "Choose folder…";
+
+    const allDone = files.every(
+      (f) => f.status === "done" || f.status === "error",
+    );
+    convertBtn.disabled =
+      isConverting ||
+      !outputDir ||
+      (conversionMode === "convert" && !targetFormat);
+
+    const btnIcon =
+      conversionMode === "compress"
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4m0 14v-4M3 12h4m14 0h-4"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/></svg>';
+
+    convertBtn.innerHTML = isConverting
+      ? `${btnIcon} Converting…`
+      : allDone && files.length > 0
+        ? `${btnIcon} Done ✓`
+        : `${btnIcon} ${conversionMode === "compress" ? "Compress All" : "Convert All"}`;
+
+    clearBtn.style.display =
+      allDone && files.length > 0 ? "inline-flex" : "none";
+
+    // Overall progress bar
+    if (isConverting) {
+      overallProgress.style.display = "flex";
+      const total = files.length;
+      const done = files.filter(
+        (f) => f.status === "done" || f.status === "error",
+      ).length;
+      const currentFile = files.find((f) => f.status === "converting");
+      const pct = Math.round(
+        ((done + (currentFile ? currentFile.progress / 100 : 0)) / total) * 100,
+      );
+      document.getElementById("overall-fill")!.style.width = pct + "%";
+      document.getElementById("overall-text")!.textContent = pct + "%";
+    } else {
+      overallProgress.style.display = "none";
+    }
+
+    // Mode toggle state
+    document.querySelectorAll("#mode-toggle .mode-btn").forEach((btn) => {
+      btn.classList.toggle(
+        "active",
+        (btn as HTMLElement).dataset.mode === conversionMode,
+      );
+    });
+  }
+
+  // ─── Tools Grids ────────────────────────────────────────────
+  let toolsView: "convert" | "compress" = "convert";
+  let toolsCatConvert = "all";
+  let toolsCatCompress = "all";
+
+  function renderToolsGrids() {
+    const convertSection = document.getElementById("tools-convert")!;
+    const compressSection = document.getElementById("tools-compress")!;
+
+    // Show the active sub-section
+    if (toolsView === "convert") {
+      convertSection.style.display = "flex";
+      compressSection.style.display = "none";
+    } else {
+      convertSection.style.display = "none";
+      compressSection.style.display = "flex";
+    }
+
+    // Update sub-tab active state
+    document.querySelectorAll(".tools-tab").forEach((tab) => {
+      tab.classList.toggle(
+        "active",
+        (tab as HTMLElement).dataset.toolsView === toolsView,
+      );
+    });
+
+    renderToolGrid("tools-convert-grid", CONVERT_TOOLS, toolsCatConvert);
+    renderToolGrid("tools-compress-grid", COMPRESS_TOOLS, toolsCatCompress);
+  }
+
+  function renderToolGrid(
+    containerId: string,
+    tools: typeof CONVERT_TOOLS,
+    cat: string,
+  ) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const filtered = cat === "all" ? tools : tools.filter((t) => t.cat === cat);
+
+    container.innerHTML = filtered
+      .map((tool) => {
+        const iconClass =
+          tool.type === "video"
+            ? "video"
+            : tool.type === "audio"
+              ? "audio"
+              : tool.type === "pdf"
+                ? "pdf"
+                : tool.cat === "gif"
+                  ? "gif"
+                  : "image";
+
+        const iconContent = tool.icon.length <= 3 ? tool.icon : tool.icon;
+
+        return `
+        <div class="tool-card" data-tool-type="${tool.type}" data-tool-format="${tool.format || ""}" data-tool-mode="${containerId.includes("compress") ? "compress" : "convert"}">
+          <div class="tool-icon ${iconClass}">${iconContent}</div>
+          <div class="tool-text">
+            <div class="tool-label">${tool.label}</div>
+            <div class="tool-desc">${tool.desc}</div>
+          </div>
+        </div>`;
+      })
+      .join("");
+
+    // Click handler on tool cards
+    container.querySelectorAll(".tool-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        const format = (card as HTMLElement).dataset.toolFormat || "";
+        const mode = (card as HTMLElement).dataset.toolMode as
+          | "convert"
+          | "compress";
+        conversionMode = mode;
+        if (format) targetFormat = format;
+        if (mode === "compress") {
+          quality = 60;
+        } else {
+          quality = 80;
+        }
+        currentTab = mode;
+        render();
+      });
+    });
+  }
+
+  // ─── State helpers ──────────────────────────────────────────
+  function updateSelectedType() {
+    if (files.length === 0) {
+      selectedType = null;
+      return;
+    }
+    const types = new Set(files.map((f) => f.type));
+    selectedType = types.size === 1 ? files[0].type : "video";
+  }
+
+  function addFiles(paths: string[]) {
+    const newPaths: string[] = [];
+    for (const p of paths) {
+      if (files.some((f) => f.path === p)) continue;
+      const name = p.split(/[\\/]/).pop() || p;
+      const type = detectType(name);
+      if (!type) continue;
+      files.push({
+        id: crypto.randomUUID(),
+        path: p,
+        name,
+        ext: getExt(name),
+        type,
+        size: 0,
+        progress: 0,
+        status: "pending",
+      });
+      newPaths.push(p);
+    }
+    updateSelectedType();
+    if (!targetFormat && selectedType) {
+      if (conversionMode !== "compress") {
+        targetFormat = FORMAT_OPTIONS[selectedType]?.[0] || "";
+      }
+      const sel = document.getElementById("format-select") as HTMLSelectElement;
+      if (sel && targetFormat) sel.value = targetFormat;
+    }
+    render();
+
+    // Fetch file sizes asynchronously
+    if (newPaths.length > 0) {
+      const api = (window as any).konvrt;
+      if (api && api.getFileSizes) {
+        api.getFileSizes(newPaths).then((sizes: Record<string, number>) => {
+          for (const [fp, size] of Object.entries(sizes)) {
+            const file = files.find((f) => f.path === fp);
+            if (file) file.size = size as number;
+          }
+          renderFileList();
+        });
+      }
+    }
+  }
+
+  // ─── Conversion ─────────────────────────────────────────────
+  async function startConversion() {
+    const api = (window as any).konvrt;
+    if (!api || isConverting) return;
+
+    isConverting = true;
+    render();
+
+    const pending = files.filter(
+      (f) => f.status === "pending" || f.status === "error",
+    );
+
+    for (const file of pending) {
+      file.status = "converting";
+      file.progress = 0;
+      file.error = undefined;
+      renderFileList();
+      renderConvertBar();
+
+      const format = conversionMode === "compress" ? file.ext : targetFormat;
+
+      const result = await api.convert({
+        filePath: file.path,
+        outputDir,
+        format,
+        quality,
+        mode: conversionMode,
+      });
+
+      if (result.success) {
+        file.status = "done";
+        file.progress = 100;
+        file.outputPath = result.outputPath;
+      } else {
+        file.status = "error";
+        file.error = result.error;
+      }
+      renderFileList();
+      renderConvertBar();
+    }
+
+    isConverting = false;
+    render();
+  }
+
+  // ─── Init ───────────────────────────────────────────────────
+  document.addEventListener("DOMContentLoaded", () => {
+    const api = (window as any).konvrt;
+
+    // Tab navigation
+    document.querySelectorAll("#nav-tabs .tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        currentTab = (btn as HTMLElement).dataset.tab as typeof currentTab;
+        if (currentTab === "compress") {
+          conversionMode = "compress";
+          quality = 60;
+        }
+        if (currentTab === "convert") {
+          conversionMode = "convert";
+          quality = 80;
+        }
+        render();
+      });
+    });
+
+    // Browse button
+    document
+      .getElementById("browse-btn")!
+      .addEventListener("click", async () => {
+        if (!api)
+          return alert("Running outside Electron — file picker unavailable.");
+        const paths: string[] = await api.selectFiles();
+        addFiles(paths);
+      });
+
+    // Drop zone
+    const zone = document.getElementById("dropzone")!;
+    zone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      zone.classList.add("drag-over");
+    });
+    zone.addEventListener("dragleave", () =>
+      zone.classList.remove("drag-over"),
+    );
+    zone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      zone.classList.remove("drag-over");
+      const dropped = Array.from(e.dataTransfer?.files || []);
+      addFiles(dropped.map((f: any) => f.path).filter(Boolean));
+    });
+
+    // Output dir
+    document
+      .getElementById("output-dir-btn")!
+      .addEventListener("click", async () => {
+        if (!api) return;
+        const dir = await api.selectOutputDir();
+        if (dir) {
+          outputDir = dir;
+          render();
+        }
+      });
+
+    // Format change
+    document
+      .getElementById("format-select")!
+      .addEventListener("change", (e) => {
+        targetFormat = (e.target as HTMLSelectElement).value;
+      });
+
+    // Quality slider
+    document
+      .getElementById("quality-slider")!
+      .addEventListener("input", (e) => {
+        quality = Number((e.target as HTMLInputElement).value);
+        document.getElementById("quality-value")!.textContent = `${quality}%`;
+      });
+
+    // Mode toggle
+    document.querySelectorAll("#mode-toggle .mode-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        conversionMode = (btn as HTMLElement).dataset.mode as
+          | "convert"
+          | "compress";
+        // Set appropriate quality defaults
+        if (conversionMode === "compress") {
+          quality = 60;
+        } else {
+          quality = 80;
+        }
+        render();
+      });
+    });
+
+    // Convert button
+    document
+      .getElementById("convert-btn")!
+      .addEventListener("click", () => startConversion());
+
+    // Clear button
+    document.getElementById("clear-btn")!.addEventListener("click", () => {
+      files = [];
+      selectedType = null;
+      render();
+    });
+
+    // Preview close
+    document
+      .getElementById("preview-close")!
+      .addEventListener("click", closePreview);
+    document
+      .getElementById("preview-modal")!
+      .querySelector(".modal-backdrop")!
+      .addEventListener("click", closePreview);
+
+    // Keyboard close
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closePreview();
+    });
+
+    // Tools category tabs (per-section)
+    document.querySelectorAll(".tools-categories .cat-tab").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const parent = (btn as HTMLElement).closest(".tools-categories")!;
+        const section = (parent as HTMLElement).dataset.section;
+        parent
+          .querySelectorAll(".cat-tab")
+          .forEach((t) => t.classList.remove("active"));
+        btn.classList.add("active");
+        const cat = (btn as HTMLElement).dataset.cat || "all";
+        if (section === "compress") {
+          toolsCatCompress = cat;
+        } else {
+          toolsCatConvert = cat;
+        }
+        renderToolsGrids();
+      });
+    });
+
+    // Tools sub-tabs (Convert / Compress within tools view)
+    document.querySelectorAll(".tools-tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        toolsView = (btn as HTMLElement).dataset.toolsView as
+          | "convert"
+          | "compress";
+        renderToolsGrids();
+      });
+    });
+
+    // Progress listener
+    if (api) {
+      api.onProgress((data: { filePath: string; progress: number }) => {
+        const file = files.find((f) => f.path === data.filePath);
+        if (file) {
+          file.progress = data.progress;
+          renderFileList();
+          renderConvertBar();
+        }
+      });
+    }
+
+    render();
+  });
+</script>

@@ -1,0 +1,313 @@
+---
+
+---
+
+<div id="convert-bar" class="hidden">
+  <div class="bar-inner">
+    <div class="bar-left">
+      <span id="stats-label" class="stats">0 files</span>
+      <div class="bar-divider"></div>
+      <button id="output-dir-btn" class="bar-chip" title="Select output folder">
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          ><path
+            d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+          ></path></svg
+        >
+        <span id="output-dir-label">Choose folder…</span>
+      </button>
+    </div>
+
+    <div class="bar-center">
+      <div class="bar-field">
+        <label class="field-label">Format</label>
+        <select id="format-select" class="field-select">
+          <option value="">—</option>
+        </select>
+      </div>
+
+      <div class="bar-field">
+        <label class="field-label"
+          >Quality <span id="quality-value" class="quality-val">80%</span
+          ></label
+        >
+        <input
+          id="quality-slider"
+          type="range"
+          min="1"
+          max="100"
+          value="80"
+          class="field-range"
+        />
+      </div>
+
+      <div class="bar-field" id="mode-field">
+        <label class="field-label">Mode</label>
+        <div class="mode-toggle" id="mode-toggle">
+          <button class="mode-btn active" data-mode="convert">Convert</button>
+          <button class="mode-btn" data-mode="compress">Compress</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bar-right">
+      <button id="clear-btn" class="btn-secondary" style="display:none;"
+        >Clear</button
+      >
+      <button id="convert-btn" class="btn-primary" disabled>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          ><polyline points="16 3 21 3 21 8"></polyline><line
+            x1="4"
+            y1="20"
+            x2="21"
+            y2="3"></line></svg
+        >
+        Convert All
+      </button>
+    </div>
+  </div>
+
+  <!-- Overall progress -->
+  <div id="overall-progress" class="overall-progress" style="display:none;">
+    <div class="overall-bar">
+      <div id="overall-fill" class="overall-fill" style="width:0%"></div>
+    </div>
+    <span id="overall-text" class="overall-text">0%</span>
+  </div>
+</div>
+
+<style>
+  #convert-bar {
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    padding: 10px 20px;
+    flex-shrink: 0;
+    transition:
+      transform 0.25s,
+      opacity 0.25s;
+  }
+  #convert-bar.hidden {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .bar-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .bar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .stats {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .bar-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+  }
+  .bar-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all var(--transition);
+    max-width: 180px;
+  }
+  .bar-chip span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .bar-chip:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .bar-center {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: center;
+  }
+  .bar-field {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .field-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .quality-val {
+    color: var(--accent-light);
+    font-weight: 700;
+  }
+
+  .field-select {
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: border-color var(--transition);
+  }
+  .field-select:focus {
+    border-color: var(--accent);
+  }
+
+  .field-range {
+    width: 90px;
+    accent-color: var(--accent);
+    height: 3px;
+    cursor: pointer;
+  }
+
+  .mode-toggle {
+    display: flex;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .mode-btn {
+    padding: 4px 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .mode-btn.active {
+    background: var(--accent);
+    color: white;
+  }
+  .mode-btn:hover:not(.active) {
+    color: var(--text);
+  }
+
+  .bar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 22px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    box-shadow: 0 2px 8px var(--accent-glow);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: linear-gradient(
+      135deg,
+      var(--accent-hover),
+      var(--accent-light)
+    );
+    box-shadow: 0 4px 20px var(--accent-glow-strong);
+    transform: translateY(-1px);
+  }
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .btn-secondary:hover {
+    border-color: var(--error);
+    color: var(--error);
+  }
+
+  .overall-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .overall-bar {
+    flex: 1;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .overall-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--success));
+    border-radius: 2px;
+    transition: width 0.4s;
+  }
+  .overall-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-light);
+    min-width: 30px;
+    text-align: right;
+  }
+</style>

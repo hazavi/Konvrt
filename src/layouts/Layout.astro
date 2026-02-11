@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Konvrt — Media Converter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  :root {
+    --bg: #08080d;
+    --surface: #111118;
+    --surface-2: #16161f;
+    --surface-3: #1c1c28;
+    --surface-hover: #1e1e2a;
+    --border: #222233;
+    --border-hover: #333348;
+    --border-active: #4a4a66;
+    --text: #eaeaf0;
+    --text-secondary: #a0a0b8;
+    --text-dim: #6a6a82;
+    --accent: #7c6cf0;
+    --accent-light: #9d8ff8;
+    --accent-hover: #8d7ff5;
+    --accent-glow: rgba(124, 108, 240, 0.15);
+    --accent-glow-strong: rgba(124, 108, 240, 0.3);
+    --success: #34d399;
+    --success-bg: rgba(52, 211, 153, 0.1);
+    --error: #f87171;
+    --error-bg: rgba(248, 113, 113, 0.1);
+    --warning: #fbbf24;
+    --video-color: #818cf8;
+    --video-bg: rgba(129, 140, 248, 0.12);
+    --audio-color: #fb923c;
+    --audio-bg: rgba(251, 146, 60, 0.12);
+    --image-color: #2dd4bf;
+    --image-bg: rgba(45, 212, 191, 0.12);
+    --gif-color: #f472b6;
+    --gif-bg: rgba(244, 114, 182, 0.12);
+    --pdf-color: #ef4444;
+    --pdf-bg: rgba(239, 68, 68, 0.12);
+    --radius: 12px;
+    --radius-md: 8px;
+    --radius-sm: 6px;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    font-family:
+      "Inter",
+      system-ui,
+      -apple-system,
+      sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--border-hover);
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+  select {
+    font-family: inherit;
+  }
+  input {
+    font-family: inherit;
+  }
+</style>

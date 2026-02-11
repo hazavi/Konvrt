@@ -1,0 +1,220 @@
+---
+
+---
+
+<div id="dropzone">
+  <div id="empty-state">
+    <div class="drop-visual">
+      <div class="drop-ring">
+        <div class="drop-ring-inner">
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--accent)"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <h2 class="drop-title">Drop your files here</h2>
+    <p class="drop-subtitle">
+      or browse to select videos, audio, images, or PDFs
+    </p>
+    <button id="browse-btn" class="browse-btn">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        ><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"
+        ></path><polyline points="13 2 13 9 20 9"></polyline></svg
+      >
+      Browse Files
+    </button>
+    <div class="format-tags">
+      <span class="fmt-tag video">MP4</span>
+      <span class="fmt-tag video">MKV</span>
+      <span class="fmt-tag video">MOV</span>
+      <span class="fmt-tag video">WEBM</span>
+      <span class="fmt-tag audio">MP3</span>
+      <span class="fmt-tag audio">WAV</span>
+      <span class="fmt-tag audio">FLAC</span>
+      <span class="fmt-tag image">JPG</span>
+      <span class="fmt-tag image">PNG</span>
+      <span class="fmt-tag image">WEBP</span>
+      <span class="fmt-tag image">AVIF</span>
+      <span class="fmt-tag image">GIF</span>
+      <span class="fmt-tag pdf">PDF</span>
+      <span class="fmt-tag">+20 more</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  #dropzone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  #dropzone::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at 50% 0%,
+      var(--accent-glow) 0%,
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  #dropzone:hover::before {
+    opacity: 0.5;
+  }
+  #dropzone.has-files {
+    min-height: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+  #dropzone.has-files::before {
+    display: none;
+  }
+  #dropzone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    transform: scale(1.005);
+  }
+  #dropzone.drag-over::before {
+    opacity: 1;
+  }
+
+  #empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 36px 20px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .drop-visual {
+    margin-bottom: 4px;
+  }
+  .drop-ring {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 2px dashed var(--border-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse-ring 3s ease-in-out infinite;
+  }
+  .drop-ring-inner {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  @keyframes pulse-ring {
+    0%,
+    100% {
+      border-color: var(--border-hover);
+    }
+    50% {
+      border-color: var(--accent);
+    }
+  }
+
+  .drop-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .drop-subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: -4px;
+  }
+
+  .browse-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 6px;
+    padding: 9px 22px;
+    border: 1px solid var(--border-hover);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .browse-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  .format-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    margin-top: 10px;
+    max-width: 420px;
+  }
+  .fmt-tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    letter-spacing: 0.3px;
+  }
+  .fmt-tag.video {
+    background: var(--video-bg);
+    color: var(--video-color);
+  }
+  .fmt-tag.audio {
+    background: var(--audio-bg);
+    color: var(--audio-color);
+  }
+  .fmt-tag.image {
+    background: var(--image-bg);
+    color: var(--image-color);
+  }
+  .fmt-tag.pdf {
+    background: var(--pdf-bg);
+    color: var(--pdf-color);
+  }
+</style>
