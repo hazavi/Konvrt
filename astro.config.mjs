@@ -7,4 +7,7 @@ export default defineConfig({
   build: {
     assets: 'assets',
   },
+  devToolbar: {
+    enabled: false,
+  },
 });

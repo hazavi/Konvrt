@@ -48,7 +48,8 @@
     "jimp": "^1.6.0",
     "mupdf": "^1.27.0",
     "pdfkit": "^0.17.2",
-    "sharp": "^0.33.2"
+    "sharp": "^0.33.2",
+    "yt-dlp-wrap": "^2.3.12"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",

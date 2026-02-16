@@ -3,6 +3,7 @@ const path = require('path');
 const http = require('http');
 const fs = require('fs');
 const { processFile } = require('./converter.cjs');
+const { isYtDlpInstalled, installYtDlp, getVideoInfo, downloadMedia, getProxySetting, setProxySetting } = require('./downloader/index.cjs');
 
 let mainWindow;
 const isDev = !app.isPackaged;
@@ -42,11 +43,11 @@ function createWindow() {
       webSecurity: false, // Allow loading local file:// previews
     },
     autoHideMenuBar: true,
-    backgroundColor: '#08080d',
+    backgroundColor: '#06060b',
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      color: '#111118',
-      symbolColor: '#a0a0b8',
+      color: '#0e0e16',
+      symbolColor: '#a2a2c0',
       height: 36,
     },
   });
@@ -85,9 +86,9 @@ ipcMain.handle('select-files', async () => {
     properties: ['openFile', 'multiSelections'],
     filters: [
       { name: 'Media Files', extensions: [
-        'mp4','mkv','avi','mov','webm','flv','wmv',
-        'mp3','wav','ogg','flac','aac','wma','m4a',
-        'jpg','jpeg','png','gif','bmp','tiff','webp','svg','avif','heic',
+        'mp4','mkv','avi','mov','webm','flv','wmv','ts','m2ts','mts','3gp','ogv','vob','mpg','mpeg','m4v','divx','asf','rm','rmvb','f4v',
+        'mp3','wav','ogg','flac','aac','wma','m4a','opus','alac','aiff','ape','ac3','dts','amr','au','ra','wv',
+        'jpg','jpeg','png','gif','bmp','tiff','tif','webp','svg','avif','heic','heif','ico','jxl','jp2','psd','raw','cr2','nef','dng',
         'pdf'
       ]},
     ],
@@ -115,6 +116,51 @@ ipcMain.handle('convert', async (event, job) => {
   } catch (err) {
     return { success: false, error: err.message };
   }
+});
+
+// ── Download IPC Handlers ──────────────────────────────────────
+
+ipcMain.handle('ytdlp-check', async () => {
+  return isYtDlpInstalled();
+});
+
+ipcMain.handle('ytdlp-install', async () => {
+  try {
+    await installYtDlp((progress) => {
+      mainWindow.webContents.send('ytdlp-install-progress', progress);
+    });
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('ytdlp-info', async (event, url) => {
+  return getVideoInfo(url);
+});
+
+ipcMain.handle('ytdlp-download', async (event, job) => {
+  // job: { url, outputDir, format, quality }
+  try {
+    const result = await downloadMedia(job, (progress) => {
+      mainWindow.webContents.send('download-progress', {
+        url: job.url,
+        ...progress,
+      });
+    });
+    return result;
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('get-proxy', async () => {
+  return getProxySetting();
+});
+
+ipcMain.handle('set-proxy', async (event, proxy) => {
+  setProxySetting(proxy);
+  return { success: true };
 });
 
 ipcMain.handle('get-file-sizes', async (event, filePaths) => {

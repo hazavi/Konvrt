@@ -11,4 +11,17 @@ contextBridge.exposeInMainWorld('konvrt', {
   removeProgressListener: () => {
     ipcRenderer.removeAllListeners('conversion-progress');
   },
+  // Download API
+  ytdlpCheck: () => ipcRenderer.invoke('ytdlp-check'),
+  ytdlpInstall: () => ipcRenderer.invoke('ytdlp-install'),
+  ytdlpInfo: (url) => ipcRenderer.invoke('ytdlp-info', url),
+  ytdlpDownload: (job) => ipcRenderer.invoke('ytdlp-download', job),
+  getProxy: () => ipcRenderer.invoke('get-proxy'),
+  setProxy: (proxy) => ipcRenderer.invoke('set-proxy', proxy),
+  onDownloadProgress: (callback) => {
+    ipcRenderer.on('download-progress', (_event, data) => callback(data));
+  },
+  onYtdlpInstallProgress: (callback) => {
+    ipcRenderer.on('ytdlp-install-progress', (_event, data) => callback(data));
+  },
 });

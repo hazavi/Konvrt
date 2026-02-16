@@ -29,44 +29,45 @@
   }
 
   :root {
-    --bg: #08080d;
-    --surface: #111118;
-    --surface-2: #16161f;
-    --surface-3: #1c1c28;
-    --surface-hover: #1e1e2a;
-    --border: #222233;
-    --border-hover: #333348;
+    --bg: #06060b;
+    --surface: #0e0e16;
+    --surface-2: #141420;
+    --surface-3: #1a1a28;
+    --surface-hover: #1c1c2e;
+    --border: #1e1e30;
+    --border-hover: #2e2e48;
     --border-active: #4a4a66;
-    --text: #eaeaf0;
-    --text-secondary: #a0a0b8;
-    --text-dim: #6a6a82;
+    --text: #eef0f6;
+    --text-secondary: #a2a2c0;
+    --text-dim: #5e5e7e;
     --accent: #7c6cf0;
-    --accent-light: #9d8ff8;
+    --accent-light: #a494ff;
     --accent-hover: #8d7ff5;
-    --accent-glow: rgba(124, 108, 240, 0.15);
-    --accent-glow-strong: rgba(124, 108, 240, 0.3);
+    --accent-glow: rgba(124, 108, 240, 0.1);
+    --accent-glow-strong: rgba(124, 108, 240, 0.25);
     --success: #34d399;
-    --success-bg: rgba(52, 211, 153, 0.1);
+    --success-bg: rgba(52, 211, 153, 0.08);
+    --success-glow: rgba(52, 211, 153, 0.2);
     --error: #f87171;
-    --error-bg: rgba(248, 113, 113, 0.1);
+    --error-bg: rgba(248, 113, 113, 0.08);
     --warning: #fbbf24;
     --video-color: #818cf8;
-    --video-bg: rgba(129, 140, 248, 0.12);
+    --video-bg: rgba(129, 140, 248, 0.1);
     --audio-color: #fb923c;
-    --audio-bg: rgba(251, 146, 60, 0.12);
+    --audio-bg: rgba(251, 146, 60, 0.1);
     --image-color: #2dd4bf;
-    --image-bg: rgba(45, 212, 191, 0.12);
+    --image-bg: rgba(45, 212, 191, 0.1);
     --gif-color: #f472b6;
-    --gif-bg: rgba(244, 114, 182, 0.12);
+    --gif-bg: rgba(244, 114, 182, 0.1);
     --pdf-color: #ef4444;
-    --pdf-bg: rgba(239, 68, 68, 0.12);
+    --pdf-bg: rgba(239, 68, 68, 0.1);
     --radius: 12px;
     --radius-md: 8px;
     --radius-sm: 6px;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+    --transition: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   html,
@@ -86,15 +87,15 @@
   }
 
   ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
     background: var(--border);
-    border-radius: 3px;
+    border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
     background: var(--border-hover);
@@ -109,5 +110,54 @@
   }
   input {
     font-family: inherit;
+  }
+
+  /* Spinner keyframes for converting button */
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes successPop {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.15);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes progressGlow {
+    0%,
+    100% {
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+    50% {
+      box-shadow: 0 0 16px var(--accent-glow-strong);
+    }
   }
 </style>

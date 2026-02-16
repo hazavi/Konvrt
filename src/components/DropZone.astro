@@ -48,27 +48,32 @@
       <span class="fmt-tag video">MKV</span>
       <span class="fmt-tag video">MOV</span>
       <span class="fmt-tag video">WEBM</span>
+      <span class="fmt-tag video">AVI</span>
+      <span class="fmt-tag video">TS</span>
       <span class="fmt-tag audio">MP3</span>
       <span class="fmt-tag audio">WAV</span>
       <span class="fmt-tag audio">FLAC</span>
+      <span class="fmt-tag audio">M4A</span>
+      <span class="fmt-tag audio">OPUS</span>
       <span class="fmt-tag image">JPG</span>
       <span class="fmt-tag image">PNG</span>
       <span class="fmt-tag image">WEBP</span>
       <span class="fmt-tag image">AVIF</span>
       <span class="fmt-tag image">GIF</span>
+      <span class="fmt-tag image">HEIC</span>
       <span class="fmt-tag pdf">PDF</span>
-      <span class="fmt-tag">+20 more</span>
+      <span class="fmt-tag">+40 more</span>
     </div>
   </div>
 </div>
 
 <style>
   #dropzone {
-    border: 2px dashed var(--border);
+    border: 1.5px dashed var(--border-hover);
     border-radius: var(--radius);
     background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    min-height: 260px;
+    min-height: 240px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -80,16 +85,16 @@
     position: absolute;
     inset: 0;
     background: radial-gradient(
-      circle at 50% 0%,
-      var(--accent-glow) 0%,
-      transparent 70%
+      ellipse at 50% 0%,
+      rgba(124, 108, 240, 0.06) 0%,
+      transparent 60%
     );
     opacity: 0;
     transition: opacity 0.3s;
     pointer-events: none;
   }
   #dropzone:hover::before {
-    opacity: 0.5;
+    opacity: 1;
   }
   #dropzone.has-files {
     min-height: 0;
@@ -102,8 +107,9 @@
   }
   #dropzone.drag-over {
     border-color: var(--accent);
-    background: var(--accent-glow);
-    transform: scale(1.005);
+    background: rgba(124, 108, 240, 0.04);
+    transform: scale(1.003);
+    box-shadow: inset 0 0 30px var(--accent-glow);
   }
   #dropzone.drag-over::before {
     opacity: 1;
@@ -113,29 +119,29 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 36px 20px;
+    gap: 8px;
+    padding: 32px 20px;
     text-align: center;
     position: relative;
     z-index: 1;
   }
 
   .drop-visual {
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
   .drop-ring {
-    width: 72px;
-    height: 72px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
-    border: 2px dashed var(--border-hover);
+    border: 1.5px dashed var(--border-hover);
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: pulse-ring 3s ease-in-out infinite;
+    animation: pulse-ring 3.5s ease-in-out infinite;
   }
   .drop-ring-inner {
-    width: 52px;
-    height: 52px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     background: var(--surface-2);
     display: flex;
@@ -146,34 +152,37 @@
     0%,
     100% {
       border-color: var(--border-hover);
+      transform: scale(1);
     }
     50% {
       border-color: var(--accent);
+      transform: scale(1.03);
     }
   }
 
   .drop-title {
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--text);
+    letter-spacing: -0.3px;
   }
   .drop-subtitle {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-dim);
-    margin-top: -4px;
+    margin-top: -2px;
   }
 
   .browse-btn {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    margin-top: 6px;
-    padding: 9px 22px;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 8px 20px;
     border: 1px solid var(--border-hover);
     border-radius: var(--radius-md);
     background: var(--surface-2);
     color: var(--text);
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 500;
     cursor: pointer;
     transition: all var(--transition);
@@ -181,25 +190,25 @@
   .browse-btn:hover {
     border-color: var(--accent);
     background: var(--accent-glow);
-    box-shadow: 0 0 20px var(--accent-glow);
+    box-shadow: 0 0 16px var(--accent-glow);
   }
 
   .format-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: 4px;
     justify-content: center;
     margin-top: 10px;
-    max-width: 420px;
+    max-width: 480px;
   }
   .fmt-tag {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 600;
-    padding: 2px 8px;
+    padding: 2px 7px;
     border-radius: 4px;
     background: var(--surface-2);
     color: var(--text-dim);
-    letter-spacing: 0.3px;
+    letter-spacing: 0.4px;
   }
   .fmt-tag.video {
     background: var(--video-bg);

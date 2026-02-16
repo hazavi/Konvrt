@@ -5,6 +5,7 @@ import DropZone from "../components/DropZone.astro";
 import FileList from "../components/FileList.astro";
 import ConvertBar from "../components/ConvertBar.astro";
 import ToolsPanel from "../components/ToolsPanel.astro";
+import DownloadView from "../components/DownloadView.astro";
 ---
 
 <Layout>
@@ -18,6 +19,8 @@ import ToolsPanel from "../components/ToolsPanel.astro";
       </div>
       <!-- Tools view -->
       <ToolsPanel />
+      <!-- Download view -->
+      <DownloadView />
     </main>
     <ConvertBar />
   </div>
@@ -34,14 +37,14 @@ import ToolsPanel from "../components/ToolsPanel.astro";
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 16px 20px 12px;
-    gap: 12px;
+    padding: 14px 18px 10px;
+    gap: 10px;
     overflow-y: auto;
   }
   #view-convert {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     flex: 1;
   }
 </style>
@@ -63,8 +66,48 @@ import ToolsPanel from "../components/ToolsPanel.astro";
   }
 
   // ─── Constants ──────────────────────────────────────────────
-  const VIDEO_EXTS = ["mp4", "mkv", "avi", "mov", "webm", "flv", "wmv"];
-  const AUDIO_EXTS = ["mp3", "wav", "ogg", "flac", "aac", "wma", "m4a"];
+  const VIDEO_EXTS = [
+    "mp4",
+    "mkv",
+    "avi",
+    "mov",
+    "webm",
+    "flv",
+    "wmv",
+    "ts",
+    "m2ts",
+    "mts",
+    "3gp",
+    "ogv",
+    "vob",
+    "mpg",
+    "mpeg",
+    "m4v",
+    "divx",
+    "asf",
+    "rm",
+    "rmvb",
+    "f4v",
+  ];
+  const AUDIO_EXTS = [
+    "mp3",
+    "wav",
+    "ogg",
+    "flac",
+    "aac",
+    "wma",
+    "m4a",
+    "opus",
+    "alac",
+    "aiff",
+    "ape",
+    "ac3",
+    "dts",
+    "amr",
+    "au",
+    "ra",
+    "wv",
+  ];
   const IMAGE_EXTS = [
     "jpg",
     "jpeg",
@@ -72,17 +115,79 @@ import ToolsPanel from "../components/ToolsPanel.astro";
     "gif",
     "bmp",
     "tiff",
+    "tif",
     "webp",
     "svg",
     "avif",
     "heic",
+    "heif",
+    "ico",
+    "jxl",
+    "jp2",
+    "psd",
+    "raw",
+    "cr2",
+    "nef",
+    "dng",
   ];
   const PDF_EXTS = ["pdf"];
 
+  // Audio formats available for videoâ†’audio extraction
+  const AUDIO_EXTRACT_FMTS = [
+    "mp3",
+    "m4a",
+    "aac",
+    "wav",
+    "flac",
+    "ogg",
+    "opus",
+    "wma",
+    "aiff",
+    "ac3",
+  ];
+
   const FORMAT_OPTIONS: Record<string, string[]> = {
-    video: ["mp4", "mkv", "avi", "mov", "webm", "flv", "wmv"],
-    audio: ["mp3", "wav", "ogg", "flac", "aac", "m4a", "wma"],
-    image: ["jpg", "png", "webp", "avif", "gif", "bmp", "tiff", "heif"],
+    video: [
+      "mp4",
+      "mkv",
+      "avi",
+      "mov",
+      "webm",
+      "flv",
+      "wmv",
+      "ts",
+      "3gp",
+      "ogv",
+      "m4v",
+      "mpg",
+    ],
+    // Audio extraction formats shown as a second group for video:
+    videoAudio: AUDIO_EXTRACT_FMTS,
+    audio: [
+      "mp3",
+      "wav",
+      "ogg",
+      "flac",
+      "aac",
+      "m4a",
+      "wma",
+      "opus",
+      "aiff",
+      "ac3",
+      "alac",
+    ],
+    image: [
+      "jpg",
+      "png",
+      "webp",
+      "avif",
+      "gif",
+      "bmp",
+      "tiff",
+      "heif",
+      "ico",
+      "jxl",
+    ],
     pdf: ["png", "jpg", "webp", "avif", "tiff", "gif", "bmp"],
   };
 
@@ -93,7 +198,7 @@ import ToolsPanel from "../components/ToolsPanel.astro";
       label: "Video Converter",
       desc: "Any video format",
       cat: "video",
-      icon: "🎬",
+      icon: "ðŸŽ¬",
       type: "video",
     },
     {
@@ -237,7 +342,7 @@ import ToolsPanel from "../components/ToolsPanel.astro";
       label: "Audio Converter",
       desc: "Any audio format",
       cat: "audio",
-      icon: "🎵",
+      icon: "ðŸŽµ",
       type: "audio",
     },
     {
@@ -300,7 +405,7 @@ import ToolsPanel from "../components/ToolsPanel.astro";
       label: "MP4 to MP3",
       desc: "Extract audio",
       cat: "audio",
-      icon: "♪",
+      icon: "â™ª",
       type: "video",
       format: "mp3",
     },
@@ -308,7 +413,7 @@ import ToolsPanel from "../components/ToolsPanel.astro";
       label: "Video to MP3",
       desc: "Extract audio",
       cat: "audio",
-      icon: "♫",
+      icon: "â™«",
       type: "video",
       format: "mp3",
     },
@@ -316,7 +421,7 @@ import ToolsPanel from "../components/ToolsPanel.astro";
       label: "Video to WAV",
       desc: "Extract lossless",
       cat: "audio",
-      icon: "♫",
+      icon: "â™«",
       type: "video",
       format: "wav",
     },
@@ -421,7 +526,7 @@ import ToolsPanel from "../components/ToolsPanel.astro";
       label: "Image Converter",
       desc: "Any image format",
       cat: "image",
-      icon: "🖼️",
+      icon: "ðŸ–¼ï¸",
       type: "image",
     },
     {
@@ -882,6 +987,410 @@ import ToolsPanel from "../components/ToolsPanel.astro";
       type: "image",
       format: "webm",
     },
+    // Audio Extraction from Video
+    {
+      label: "Video to M4A",
+      desc: "Extract M4A audio",
+      cat: "audio",
+      icon: "M4A",
+      type: "video",
+      format: "m4a",
+    },
+    {
+      label: "Video to AAC",
+      desc: "Extract AAC audio",
+      cat: "audio",
+      icon: "AAC",
+      type: "video",
+      format: "aac",
+    },
+    {
+      label: "Video to FLAC",
+      desc: "Extract lossless FLAC",
+      cat: "audio",
+      icon: "FLC",
+      type: "video",
+      format: "flac",
+    },
+    {
+      label: "Video to OGG",
+      desc: "Extract OGG audio",
+      cat: "audio",
+      icon: "OGG",
+      type: "video",
+      format: "ogg",
+    },
+    {
+      label: "Video to OPUS",
+      desc: "Extract Opus audio",
+      cat: "audio",
+      icon: "OPS",
+      type: "video",
+      format: "opus",
+    },
+    {
+      label: "Video to WMA",
+      desc: "Extract WMA audio",
+      cat: "audio",
+      icon: "WMA",
+      type: "video",
+      format: "wma",
+    },
+    {
+      label: "Video to AIFF",
+      desc: "Extract AIFF audio",
+      cat: "audio",
+      icon: "AIF",
+      type: "video",
+      format: "aiff",
+    },
+    {
+      label: "MP4 to M4A",
+      desc: "MP4 to M4A audio",
+      cat: "audio",
+      icon: "M4A",
+      type: "video",
+      format: "m4a",
+    },
+    {
+      label: "MP4 to AAC",
+      desc: "MP4 to AAC audio",
+      cat: "audio",
+      icon: "AAC",
+      type: "video",
+      format: "aac",
+    },
+    {
+      label: "MP4 to FLAC",
+      desc: "MP4 to lossless",
+      cat: "audio",
+      icon: "FLC",
+      type: "video",
+      format: "flac",
+    },
+    {
+      label: "MP4 to OGG",
+      desc: "MP4 to OGG audio",
+      cat: "audio",
+      icon: "OGG",
+      type: "video",
+      format: "ogg",
+    },
+    {
+      label: "MKV to MP3",
+      desc: "MKV to MP3 audio",
+      cat: "audio",
+      icon: "MP3",
+      type: "video",
+      format: "mp3",
+    },
+    {
+      label: "MKV to M4A",
+      desc: "MKV to M4A audio",
+      cat: "audio",
+      icon: "M4A",
+      type: "video",
+      format: "m4a",
+    },
+    {
+      label: "MKV to FLAC",
+      desc: "MKV to lossless",
+      cat: "audio",
+      icon: "FLC",
+      type: "video",
+      format: "flac",
+    },
+    {
+      label: "AVI to MP3",
+      desc: "AVI to MP3 audio",
+      cat: "audio",
+      icon: "MP3",
+      type: "video",
+      format: "mp3",
+    },
+    {
+      label: "MOV to MP3",
+      desc: "MOV to MP3 audio",
+      cat: "audio",
+      icon: "MP3",
+      type: "video",
+      format: "mp3",
+    },
+    {
+      label: "MOV to M4A",
+      desc: "MOV to M4A audio",
+      cat: "audio",
+      icon: "M4A",
+      type: "video",
+      format: "m4a",
+    },
+    {
+      label: "WEBM to MP3",
+      desc: "WebM to MP3 audio",
+      cat: "audio",
+      icon: "MP3",
+      type: "video",
+      format: "mp3",
+    },
+    {
+      label: "WEBM to OGG",
+      desc: "WebM to OGG audio",
+      cat: "audio",
+      icon: "OGG",
+      type: "video",
+      format: "ogg",
+    },
+    {
+      label: "FLV to MP3",
+      desc: "FLV to MP3 audio",
+      cat: "audio",
+      icon: "MP3",
+      type: "video",
+      format: "mp3",
+    },
+    // More audio conversions
+    {
+      label: "OPUS Converter",
+      desc: "Convert to Opus",
+      cat: "audio",
+      icon: "OPS",
+      type: "audio",
+      format: "opus",
+    },
+    {
+      label: "AIFF Converter",
+      desc: "Convert to AIFF",
+      cat: "audio",
+      icon: "AIF",
+      type: "audio",
+      format: "aiff",
+    },
+    {
+      label: "WAV to FLAC",
+      desc: "WAV to lossless",
+      cat: "audio",
+      icon: "WAV",
+      type: "audio",
+      format: "flac",
+    },
+    {
+      label: "WAV to AAC",
+      desc: "WAV to AAC",
+      cat: "audio",
+      icon: "WAV",
+      type: "audio",
+      format: "aac",
+    },
+    {
+      label: "WAV to M4A",
+      desc: "WAV to M4A",
+      cat: "audio",
+      icon: "WAV",
+      type: "audio",
+      format: "m4a",
+    },
+    {
+      label: "WAV to OPUS",
+      desc: "WAV to Opus",
+      cat: "audio",
+      icon: "WAV",
+      type: "audio",
+      format: "opus",
+    },
+    {
+      label: "FLAC to AAC",
+      desc: "FLAC to AAC",
+      cat: "audio",
+      icon: "FLC",
+      type: "audio",
+      format: "aac",
+    },
+    {
+      label: "FLAC to M4A",
+      desc: "FLAC to M4A",
+      cat: "audio",
+      icon: "FLC",
+      type: "audio",
+      format: "m4a",
+    },
+    {
+      label: "FLAC to OGG",
+      desc: "FLAC to OGG",
+      cat: "audio",
+      icon: "FLC",
+      type: "audio",
+      format: "ogg",
+    },
+    {
+      label: "FLAC to OPUS",
+      desc: "FLAC to Opus",
+      cat: "audio",
+      icon: "FLC",
+      type: "audio",
+      format: "opus",
+    },
+    {
+      label: "M4A to WAV",
+      desc: "M4A to WAV",
+      cat: "audio",
+      icon: "M4A",
+      type: "audio",
+      format: "wav",
+    },
+    {
+      label: "M4A to FLAC",
+      desc: "M4A to lossless",
+      cat: "audio",
+      icon: "M4A",
+      type: "audio",
+      format: "flac",
+    },
+    {
+      label: "M4A to AAC",
+      desc: "M4A to AAC",
+      cat: "audio",
+      icon: "M4A",
+      type: "audio",
+      format: "aac",
+    },
+    {
+      label: "M4A to OGG",
+      desc: "M4A to OGG",
+      cat: "audio",
+      icon: "M4A",
+      type: "audio",
+      format: "ogg",
+    },
+    {
+      label: "OGG to WAV",
+      desc: "OGG to WAV",
+      cat: "audio",
+      icon: "OGG",
+      type: "audio",
+      format: "wav",
+    },
+    {
+      label: "OGG to FLAC",
+      desc: "OGG to lossless",
+      cat: "audio",
+      icon: "OGG",
+      type: "audio",
+      format: "flac",
+    },
+    {
+      label: "OGG to M4A",
+      desc: "OGG to M4A",
+      cat: "audio",
+      icon: "OGG",
+      type: "audio",
+      format: "m4a",
+    },
+    {
+      label: "AAC to WAV",
+      desc: "AAC to WAV",
+      cat: "audio",
+      icon: "AAC",
+      type: "audio",
+      format: "wav",
+    },
+    {
+      label: "AAC to FLAC",
+      desc: "AAC to lossless",
+      cat: "audio",
+      icon: "AAC",
+      type: "audio",
+      format: "flac",
+    },
+    {
+      label: "AAC to M4A",
+      desc: "AAC to M4A",
+      cat: "audio",
+      icon: "AAC",
+      type: "audio",
+      format: "m4a",
+    },
+    {
+      label: "AAC to OGG",
+      desc: "AAC to OGG",
+      cat: "audio",
+      icon: "AAC",
+      type: "audio",
+      format: "ogg",
+    },
+    // More image formats
+    {
+      label: "ICO Converter",
+      desc: "Convert to ICO",
+      cat: "image",
+      icon: "ICO",
+      type: "image",
+      format: "ico",
+    },
+    {
+      label: "JXL Converter",
+      desc: "Convert to JPEG XL",
+      cat: "image",
+      icon: "JXL",
+      type: "image",
+      format: "jxl",
+    },
+    {
+      label: "HEIF Converter",
+      desc: "Convert to HEIF",
+      cat: "image",
+      icon: "HIF",
+      type: "image",
+      format: "heif",
+    },
+    {
+      label: "GIF to WEBP",
+      desc: "GIF to WebP",
+      cat: "image",
+      icon: "GIF",
+      type: "image",
+      format: "webp",
+    },
+    {
+      label: "GIF to AVIF",
+      desc: "GIF to AVIF",
+      cat: "image",
+      icon: "GIF",
+      type: "image",
+      format: "avif",
+    },
+    // More video formats
+    {
+      label: "TS Converter",
+      desc: "Convert to MPEG-TS",
+      cat: "video",
+      icon: "TS",
+      type: "video",
+      format: "ts",
+    },
+    {
+      label: "3GP Converter",
+      desc: "Convert to 3GP",
+      cat: "video",
+      icon: "3GP",
+      type: "video",
+      format: "3gp",
+    },
+    {
+      label: "OGV Converter",
+      desc: "Convert to OGV",
+      cat: "video",
+      icon: "OGV",
+      type: "video",
+      format: "ogv",
+    },
+    {
+      label: "M4V Converter",
+      desc: "Convert to M4V",
+      cat: "video",
+      icon: "M4V",
+      type: "video",
+      format: "m4v",
+    },
   ];
 
   const COMPRESS_TOOLS = [
@@ -889,7 +1398,7 @@ import ToolsPanel from "../components/ToolsPanel.astro";
       label: "Video Compressor",
       desc: "Reduce any video size",
       cat: "video",
-      icon: "🎬",
+      icon: "ðŸŽ¬",
       type: "video",
     },
     {
@@ -936,7 +1445,7 @@ import ToolsPanel from "../components/ToolsPanel.astro";
       label: "Audio Compressor",
       desc: "Reduce any audio size",
       cat: "audio",
-      icon: "🎵",
+      icon: "ðŸŽµ",
       type: "audio",
     },
     {
@@ -991,7 +1500,7 @@ import ToolsPanel from "../components/ToolsPanel.astro";
       label: "Image Compressor",
       desc: "Reduce any image size",
       cat: "image",
-      icon: "🖼️",
+      icon: "ðŸ–¼ï¸",
       type: "image",
     },
     {
@@ -1051,8 +1560,31 @@ import ToolsPanel from "../components/ToolsPanel.astro";
   let quality = 80;
   let isConverting = false;
   let selectedType: "video" | "audio" | "image" | "pdf" | null = null;
-  let currentTab: "convert" | "compress" | "tools" = "convert";
+  let currentTab: "convert" | "compress" | "tools" | "download" = "convert";
   let conversionMode: "convert" | "compress" = "convert";
+
+  // ─── Download State ─────────────────────────────────────────
+  let dlPlatform: "youtube" | "tiktok" = "youtube";
+  let dlFormat = "mp4";
+  let dlQuality = "best";
+  let dlOutputDir = "";
+  let dlIsDownloading = false;
+  let dlVideoInfo: {
+    title: string;
+    thumbnail: string;
+    duration: number;
+    uploader: string;
+    platform: string;
+    url: string;
+  } | null = null;
+  interface DlHistoryEntry {
+    title: string;
+    format: string;
+    status: "success" | "error";
+    error?: string;
+    outputPath?: string;
+  }
+  let dlHistory: DlHistoryEntry[] = [];
 
   // ─── Helpers ────────────────────────────────────────────────
   function detectType(name: string): FileEntry["type"] | null {
@@ -1078,7 +1610,7 @@ import ToolsPanel from "../components/ToolsPanel.astro";
 
   function truncatePath(p: string): string {
     if (p.length <= 30) return p;
-    return "…" + p.slice(-28);
+    return "â€¦" + p.slice(-28);
   }
 
   function formatSize(bytes: number): string {
@@ -1120,13 +1652,18 @@ import ToolsPanel from "../components/ToolsPanel.astro";
   function renderViews() {
     const convertView = document.getElementById("view-convert")!;
     const toolsPanel = document.getElementById("tools-panel")!;
+    const downloadView = document.getElementById("view-download")!;
+
+    convertView.style.display = "none";
+    toolsPanel.style.display = "none";
+    downloadView.style.display = "none";
 
     if (currentTab === "tools") {
-      convertView.style.display = "none";
       toolsPanel.style.display = "block";
+    } else if (currentTab === "download") {
+      downloadView.style.display = "flex";
     } else {
       convertView.style.display = "flex";
-      toolsPanel.style.display = "none";
     }
   }
 
@@ -1164,7 +1701,7 @@ import ToolsPanel from "../components/ToolsPanel.astro";
         } else if (f.type === "pdf") {
           thumbHtml = `<div class="file-thumb"><span class="thumb-icon" style="font-size:13px;font-weight:800;color:var(--pdf-color);">PDF</span></div>`;
         } else {
-          thumbHtml = `<div class="file-thumb"><span class="thumb-icon">🎵</span></div>`;
+          thumbHtml = `<div class="file-thumb"><span class="thumb-icon">ðŸŽµ</span></div>`;
         }
 
         let statusHtml = "";
@@ -1173,10 +1710,16 @@ import ToolsPanel from "../components/ToolsPanel.astro";
           <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${f.progress}%"></div></div>
           <span class="progress-pct">${f.progress}%</span>`;
         } else if (f.status === "done") {
-          statusHtml = `<span class="status-icon done">✓</span>`;
+          statusHtml = `<span class="status-icon done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>`;
         } else if (f.status === "error") {
-          statusHtml = `<span class="status-icon error" title="${escapeHtml(f.error || "")}">✕</span>`;
+          statusHtml = `<span class="status-icon error" title="${escapeHtml(f.error || "")}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`;
         }
+
+        // Show target format badge for done files
+        const doneFormatHtml =
+          f.status === "done" && f.outputPath
+            ? `<span class="done-format">${f.outputPath.split(".").pop()?.toUpperCase() || ""}</span>`
+            : "";
 
         return `
         <div class="file-card ${f.status}" data-id="${f.id}">
@@ -1185,12 +1728,13 @@ import ToolsPanel from "../components/ToolsPanel.astro";
             <div class="file-name-row">
               <span class="file-name">${escapeHtml(f.name)}</span>
               <span class="file-type-badge ${f.type}">${f.type}</span>
+              ${doneFormatHtml}
             </div>
-            <span class="file-meta">${f.ext.toUpperCase()}${f.size ? " · " + formatSize(f.size) : ""}</span>
+            <span class="file-meta">${f.ext.toUpperCase()}${f.size ? " Â· " + formatSize(f.size) : ""}${f.status === "done" ? " Â· Completed" : ""}</span>
           </div>
           <div class="file-right">
             ${statusHtml}
-            <button class="remove-btn" data-id="${f.id}" ${isConverting ? "disabled" : ""} title="Remove">×</button>
+            <button class="remove-btn" data-id="${f.id}" ${isConverting ? "disabled" : ""} title="Remove">Ã—</button>
           </div>
         </div>`;
       })
@@ -1216,6 +1760,11 @@ import ToolsPanel from "../components/ToolsPanel.astro";
   }
 
   // ─── Preview Modal ──────────────────────────────────────────
+  let previewIndex = -1;
+  function getPreviewableFiles() {
+    return files.filter((f) => isPreviewable(f.type, f.ext));
+  }
+
   function openPreview(filePath: string, type: string) {
     const modal = document.getElementById("preview-modal")!;
     const body = document.getElementById("preview-body")!;
@@ -1223,15 +1772,47 @@ import ToolsPanel from "../components/ToolsPanel.astro";
     const url = getPreviewUrl(filePath);
     const name = filePath.split(/[\\/]/).pop() || "";
     const file = files.find((f) => f.path === filePath);
-    const sizeStr = file && file.size ? ` — ${formatSize(file.size)}` : "";
+    const sizeStr = file && file.size ? formatSize(file.size) : "";
+    const previewable = getPreviewableFiles();
+    previewIndex = previewable.findIndex((f) => f.path === filePath);
+    const counterStr =
+      previewable.length > 1
+        ? `${previewIndex + 1} / ${previewable.length}`
+        : "";
 
     if (type === "image") {
       body.innerHTML = `<img src="${url}" alt="${escapeHtml(name)}" />`;
     } else if (type === "video") {
       body.innerHTML = `<video src="${url}" controls autoplay style="outline:none;"></video>`;
     }
-    info.innerHTML = `<span class="preview-name">${escapeHtml(name)}</span>${sizeStr ? `<span class="preview-size">${sizeStr}</span>` : ""}`;
+    info.innerHTML = `<span class="preview-counter">${counterStr}</span><span class="preview-name">${escapeHtml(name)}</span>${sizeStr ? `<span class="preview-size">${sizeStr}</span>` : ""}`;
     modal.style.display = "flex";
+    updatePreviewNav();
+  }
+
+  function updatePreviewNav() {
+    const previewable = getPreviewableFiles();
+    const prevBtn = document.getElementById(
+      "preview-prev",
+    ) as HTMLButtonElement;
+    const nextBtn = document.getElementById(
+      "preview-next",
+    ) as HTMLButtonElement;
+    if (prevBtn) prevBtn.disabled = previewIndex <= 0;
+    if (nextBtn) nextBtn.disabled = previewIndex >= previewable.length - 1;
+    // Hide nav if only one previewable file
+    if (prevBtn)
+      prevBtn.style.display = previewable.length <= 1 ? "none" : "flex";
+    if (nextBtn)
+      nextBtn.style.display = previewable.length <= 1 ? "none" : "flex";
+  }
+
+  function navigatePreview(direction: -1 | 1) {
+    const previewable = getPreviewableFiles();
+    const newIndex = previewIndex + direction;
+    if (newIndex < 0 || newIndex >= previewable.length) return;
+    const f = previewable[newIndex];
+    openPreview(f.path, f.type);
   }
 
   function closePreview() {
@@ -1242,6 +1823,8 @@ import ToolsPanel from "../components/ToolsPanel.astro";
   }
 
   // ─── Convert Bar ───────────────────────────────────────────
+  let formatSubTab: "video" | "audio" = "video";
+
   function renderConvertBar() {
     const bar = document.getElementById("convert-bar")!;
     const formatSelect = document.getElementById(
@@ -1259,8 +1842,14 @@ import ToolsPanel from "../components/ToolsPanel.astro";
     const clearBtn = document.getElementById("clear-btn") as HTMLButtonElement;
     const overallProgress = document.getElementById("overall-progress")!;
     const modeField = document.getElementById("mode-field")!;
+    const formatTabs = document.getElementById("format-tabs")!;
+    const sliderFill = document.getElementById("slider-fill")!;
 
-    if (files.length === 0 || currentTab === "tools") {
+    if (
+      files.length === 0 ||
+      currentTab === "tools" ||
+      currentTab === "download"
+    ) {
       bar.classList.add("hidden");
       return;
     }
@@ -1269,36 +1858,105 @@ import ToolsPanel from "../components/ToolsPanel.astro";
     // Stats
     const doneCount = files.filter((f) => f.status === "done").length;
     const errCount = files.filter((f) => f.status === "error").length;
-    statsLabel.textContent = `${files.length} file${files.length > 1 ? "s" : ""}${doneCount ? ` · ${doneCount} done` : ""}${errCount ? ` · ${errCount} err` : ""}`;
+    statsLabel.textContent = `${files.length} file${files.length > 1 ? "s" : ""}${doneCount ? ` Â· ${doneCount} done` : ""}${errCount ? ` Â· ${errCount} err` : ""}`;
 
-    // Format options
+    // Update slider fill
+    sliderFill.style.width = `${quality}%`;
+
+    // Format options with smart filtering
     if (
       conversionMode === "convert" &&
       selectedType &&
       FORMAT_OPTIONS[selectedType]
     ) {
-      const opts = FORMAT_OPTIONS[selectedType];
-      const current = formatSelect.value;
-      formatSelect.innerHTML = opts
-        .map(
-          (f) =>
-            `<option value="${f}" ${f === current ? "selected" : ""}>${f.toUpperCase()}</option>`,
-        )
-        .join("");
-      if (!opts.includes(current)) {
-        formatSelect.value = opts[0];
-        targetFormat = opts[0];
+      // Get all unique file extensions to filter out same-format conversions
+      const fileExts = new Set(files.map((f) => f.ext.toLowerCase()));
+      const hasSingleExt = fileExts.size === 1;
+      const sourceExt = hasSingleExt ? [...fileExts][0] : null;
+
+      // Show Video/Audio tabs only for video files
+      if (selectedType === "video") {
+        formatTabs.classList.add("visible");
+        // Update format tab active state
+        formatTabs.querySelectorAll(".format-tab").forEach((tab) => {
+          tab.classList.toggle(
+            "active",
+            (tab as HTMLElement).dataset.formatTab === formatSubTab,
+          );
+        });
+
+        const current = formatSelect.value;
+        let optionsHtml = "";
+        if (formatSubTab === "video") {
+          let opts = FORMAT_OPTIONS.video.filter((f) => {
+            if (sourceExt) {
+              const normalized = f === "jpg" ? "jpeg" : f;
+              const normSource = sourceExt === "jpg" ? "jpeg" : sourceExt;
+              if (normalized === normSource || f === sourceExt) return false;
+            }
+            return true;
+          });
+          optionsHtml = opts
+            .map(
+              (f) =>
+                `<option value="${f}" ${f === current ? "selected" : ""}>${f.toUpperCase()}</option>`,
+            )
+            .join("");
+          formatSelect.innerHTML = optionsHtml;
+          if (!opts.includes(current)) {
+            formatSelect.value = opts[0] || "";
+            targetFormat = opts[0] || "";
+          }
+        } else {
+          // Audio extraction formats
+          const audioOpts = FORMAT_OPTIONS.videoAudio.filter(
+            (f) => !sourceExt || f !== sourceExt,
+          );
+          optionsHtml = audioOpts
+            .map(
+              (f) =>
+                `<option value="${f}" ${f === current ? "selected" : ""}>${f.toUpperCase()}</option>`,
+            )
+            .join("");
+          formatSelect.innerHTML = optionsHtml;
+          if (!audioOpts.includes(current)) {
+            formatSelect.value = audioOpts[0] || "";
+            targetFormat = audioOpts[0] || "";
+          }
+        }
+      } else {
+        formatTabs.classList.remove("visible");
+        let opts = FORMAT_OPTIONS[selectedType].filter((f) => {
+          if (sourceExt) {
+            const normalized = f === "jpg" ? "jpeg" : f;
+            const normSource = sourceExt === "jpg" ? "jpeg" : sourceExt;
+            if (normalized === normSource || f === sourceExt) return false;
+          }
+          return true;
+        });
+        const current = formatSelect.value;
+        formatSelect.innerHTML = opts
+          .map(
+            (f) =>
+              `<option value="${f}" ${f === current ? "selected" : ""}>${f.toUpperCase()}</option>`,
+          )
+          .join("");
+        if (!opts.includes(current)) {
+          formatSelect.value = opts[0] || "";
+          targetFormat = opts[0] || "";
+        }
       }
-      formatSelect.parentElement!.style.display = "flex";
+      document.getElementById("format-field")!.style.display = "flex";
     } else if (conversionMode === "compress") {
-      formatSelect.parentElement!.style.display = "none";
+      document.getElementById("format-field")!.style.display = "none";
+      formatTabs.classList.remove("visible");
     }
 
     qualitySlider.value = String(quality);
     qualityLabel.textContent = `${quality}%`;
     outputLabel.textContent = outputDir
       ? truncatePath(outputDir)
-      : "Choose folder…";
+      : "Choose folderâ€¦";
 
     const allDone = files.every(
       (f) => f.status === "done" || f.status === "error",
@@ -1313,11 +1971,20 @@ import ToolsPanel from "../components/ToolsPanel.astro";
         ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4m0 14v-4M3 12h4m14 0h-4"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>'
         : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/></svg>';
 
-    convertBtn.innerHTML = isConverting
-      ? `${btnIcon} Converting…`
-      : allDone && files.length > 0
-        ? `${btnIcon} Done ✓`
-        : `${btnIcon} ${conversionMode === "compress" ? "Compress All" : "Convert All"}`;
+    if (isConverting) {
+      convertBtn.innerHTML = `<span class="btn-spinner"></span> Convertingâ€¦`;
+      convertBtn.classList.add("converting");
+      convertBtn.classList.remove("done");
+    } else if (allDone && files.length > 0) {
+      const successCount = files.filter((f) => f.status === "done").length;
+      const errCount2 = files.filter((f) => f.status === "error").length;
+      convertBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ${successCount} Done${errCount2 ? ` Â· ${errCount2} Failed` : ""}`;
+      convertBtn.classList.remove("converting");
+      convertBtn.classList.add("done");
+    } else {
+      convertBtn.innerHTML = `${btnIcon} ${conversionMode === "compress" ? "Compress All" : "Convert All"}`;
+      convertBtn.classList.remove("converting", "done");
+    }
 
     clearBtn.style.display =
       allDone && files.length > 0 ? "inline-flex" : "none";
@@ -1424,7 +2091,7 @@ import ToolsPanel from "../components/ToolsPanel.astro";
         conversionMode = mode;
         if (format) targetFormat = format;
         if (mode === "compress") {
-          quality = 60;
+          quality = 85;
         } else {
           quality = 80;
         }
@@ -1533,6 +2200,206 @@ import ToolsPanel from "../components/ToolsPanel.astro";
     render();
   }
 
+  // ─── Download Functions ─────────────────────────────────────
+  function formatDuration(seconds: number): string {
+    if (!seconds || seconds <= 0) return "0:00";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    if (h > 0)
+      return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    return `${m}:${String(s).padStart(2, "0")}`;
+  }
+
+  async function checkYtDlpAndRender() {
+    const api = (window as any).konvrt;
+    if (!api) return;
+    const installed = await api.ytdlpCheck();
+    const setup = document.getElementById("dl-setup")!;
+    const main = document.getElementById("dl-main")!;
+    if (installed) {
+      setup.style.display = "none";
+      main.style.display = "flex";
+      main.style.flexDirection = "column";
+      main.style.gap = "16px";
+    } else {
+      setup.style.display = "flex";
+      main.style.display = "none";
+    }
+  }
+
+  async function handleInstallYtDlp() {
+    const api = (window as any).konvrt;
+    if (!api) return;
+    const btn = document.getElementById("dl-install-btn") as HTMLButtonElement;
+    const status = document.getElementById("dl-install-status")!;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="btn-spinner"></span> Installing...';
+    status.textContent = "Downloading yt-dlp binary...";
+
+    const result = await api.ytdlpInstall();
+    if (result.success) {
+      status.textContent = "Installed successfully!";
+      status.style.color = "var(--success)";
+      setTimeout(() => checkYtDlpAndRender(), 500);
+    } else {
+      status.textContent = `Failed: ${result.error}`;
+      status.style.color = "var(--error)";
+      btn.disabled = false;
+      btn.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Retry Install';
+    }
+  }
+
+  async function handleFetchVideoInfo() {
+    const api = (window as any).konvrt;
+    if (!api) return;
+    const input = document.getElementById("dl-url-input") as HTMLInputElement;
+    const fetchBtn = document.getElementById(
+      "dl-fetch-btn",
+    ) as HTMLButtonElement;
+    const url = input.value.trim();
+    if (!url) return;
+
+    fetchBtn.disabled = true;
+    fetchBtn.classList.add("loading");
+    input.disabled = true;
+    input.style.opacity = "0.5";
+
+    // Hide previous info
+    document.getElementById("dl-info-card")!.style.display = "none";
+    document.getElementById("dl-options")!.style.display = "none";
+    document.getElementById("dl-progress")!.style.display = "none";
+
+    const result = await api.ytdlpInfo(url);
+    fetchBtn.disabled = false;
+    fetchBtn.classList.remove("loading");
+    input.disabled = false;
+    input.style.opacity = "1";
+
+    if (result.success) {
+      dlVideoInfo = result.data;
+      // Update UI
+      (document.getElementById("dl-thumb") as HTMLImageElement).src =
+        result.data.thumbnail;
+      document.getElementById("dl-title")!.textContent = result.data.title;
+      document.getElementById("dl-uploader")!.textContent =
+        result.data.uploader;
+      document.getElementById("dl-duration")!.textContent = formatDuration(
+        result.data.duration,
+      );
+      document.getElementById("dl-platform-badge")!.textContent =
+        result.data.platform;
+      document.getElementById("dl-info-card")!.style.display = "flex";
+      document.getElementById("dl-options")!.style.display = "flex";
+      updateDlStartBtn();
+    } else {
+      dlVideoInfo = null;
+      alert("Could not fetch video info: " + result.error);
+    }
+  }
+
+  function updateDlStartBtn() {
+    const btn = document.getElementById("dl-start-btn") as HTMLButtonElement;
+    btn.disabled = !dlVideoInfo || !dlOutputDir || dlIsDownloading;
+  }
+
+  async function handleStartDownload() {
+    const api = (window as any).konvrt;
+    if (!api || !dlVideoInfo || !dlOutputDir) return;
+
+    dlIsDownloading = true;
+    const startBtn = document.getElementById(
+      "dl-start-btn",
+    ) as HTMLButtonElement;
+    const progressDiv = document.getElementById("dl-progress")!;
+    startBtn.innerHTML = '<span class="btn-spinner"></span> Downloading...';
+    startBtn.classList.add("downloading");
+    startBtn.disabled = true;
+
+    progressDiv.style.display = "flex";
+    document.getElementById("dl-progress-fill")!.style.width = "0%";
+    document.getElementById("dl-progress-pct")!.textContent = "0%";
+    document.getElementById("dl-progress-label")!.textContent =
+      "Downloading...";
+    document.getElementById("dl-progress-speed")!.textContent = "";
+    document.getElementById("dl-progress-eta")!.textContent = "";
+
+    const result = await api.ytdlpDownload({
+      url: dlVideoInfo.url,
+      outputDir: dlOutputDir,
+      format: dlFormat,
+      quality: dlQuality,
+    });
+
+    dlIsDownloading = false;
+
+    if (result.success) {
+      startBtn.innerHTML =
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Downloaded!';
+      startBtn.classList.remove("downloading");
+      startBtn.classList.add("done");
+      document.getElementById("dl-progress-label")!.textContent = "Complete!";
+      document.getElementById("dl-progress-fill")!.style.width = "100%";
+      document.getElementById("dl-progress-pct")!.textContent = "100%";
+
+      dlHistory.unshift({
+        title: dlVideoInfo.title,
+        format: dlFormat.toUpperCase(),
+        status: "success",
+        outputPath: result.outputPath,
+      });
+    } else {
+      startBtn.innerHTML =
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Failed';
+      startBtn.classList.remove("downloading");
+      document.getElementById("dl-progress-label")!.textContent =
+        "Failed: " + (result.error || "Unknown error");
+
+      dlHistory.unshift({
+        title: dlVideoInfo?.title || "Unknown",
+        format: dlFormat.toUpperCase(),
+        status: "error",
+        error: result.error,
+      });
+    }
+
+    renderDlHistory();
+
+    // Reset after delay
+    setTimeout(() => {
+      startBtn.classList.remove("done");
+      startBtn.innerHTML =
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download';
+      startBtn.disabled = false;
+      progressDiv.style.display = "none";
+      updateDlStartBtn();
+    }, 3000);
+  }
+
+  function renderDlHistory() {
+    const container = document.getElementById("dl-history")!;
+    container.innerHTML = dlHistory
+      .map(
+        (item) => `
+      <div class="dl-history-item">
+        <div class="dl-history-icon ${item.status}">
+          ${
+            item.status === "success"
+              ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+              : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+          }
+        </div>
+        <div class="dl-history-details">
+          <div class="dl-history-name">${escapeHtml(item.title)}</div>
+          <div class="dl-history-meta">${item.format} Â· ${item.status === "success" ? "Downloaded" : item.error || "Failed"}</div>
+        </div>
+      </div>
+    `,
+      )
+      .join("");
+  }
+
   // ─── Init ───────────────────────────────────────────────────
   document.addEventListener("DOMContentLoaded", () => {
     const api = (window as any).konvrt;
@@ -1543,11 +2410,14 @@ import ToolsPanel from "../components/ToolsPanel.astro";
         currentTab = (btn as HTMLElement).dataset.tab as typeof currentTab;
         if (currentTab === "compress") {
           conversionMode = "compress";
-          quality = 60;
+          quality = 85;
         }
         if (currentTab === "convert") {
           conversionMode = "convert";
           quality = 80;
+        }
+        if (currentTab === "download") {
+          checkYtDlpAndRender();
         }
         render();
       });
@@ -1558,7 +2428,7 @@ import ToolsPanel from "../components/ToolsPanel.astro";
       .getElementById("browse-btn")!
       .addEventListener("click", async () => {
         if (!api)
-          return alert("Running outside Electron — file picker unavailable.");
+          return alert("Running outside Electron â€” file picker unavailable.");
         const paths: string[] = await api.selectFiles();
         addFiles(paths);
       });
@@ -1604,7 +2474,30 @@ import ToolsPanel from "../components/ToolsPanel.astro";
       .addEventListener("input", (e) => {
         quality = Number((e.target as HTMLInputElement).value);
         document.getElementById("quality-value")!.textContent = `${quality}%`;
+        document.getElementById("slider-fill")!.style.width = `${quality}%`;
       });
+
+    // Quality help tooltip
+    const helpBtn = document.getElementById("quality-help")!;
+    const tooltip = document.getElementById("quality-tooltip")!;
+    helpBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      tooltip.classList.toggle("visible");
+    });
+    document.addEventListener("click", () => {
+      tooltip.classList.remove("visible");
+    });
+    tooltip.addEventListener("click", (e) => e.stopPropagation());
+
+    // Format sub-tabs (Video / Audio)
+    document.querySelectorAll("#format-tabs .format-tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        formatSubTab = (btn as HTMLElement).dataset.formatTab as
+          | "video"
+          | "audio";
+        render();
+      });
+    });
 
     // Mode toggle
     document.querySelectorAll("#mode-toggle .mode-btn").forEach((btn) => {
@@ -1614,7 +2507,7 @@ import ToolsPanel from "../components/ToolsPanel.astro";
           | "compress";
         // Set appropriate quality defaults
         if (conversionMode === "compress") {
-          quality = 60;
+          quality = 85;
         } else {
           quality = 80;
         }
@@ -1643,9 +2536,22 @@ import ToolsPanel from "../components/ToolsPanel.astro";
       .querySelector(".modal-backdrop")!
       .addEventListener("click", closePreview);
 
-    // Keyboard close
+    // Preview navigation
+    document
+      .getElementById("preview-prev")!
+      .addEventListener("click", () => navigatePreview(-1));
+    document
+      .getElementById("preview-next")!
+      .addEventListener("click", () => navigatePreview(1));
+
+    // Keyboard close + navigation
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closePreview();
+      const modal = document.getElementById("preview-modal")!;
+      if (modal.style.display === "flex") {
+        if (e.key === "ArrowLeft") navigatePreview(-1);
+        if (e.key === "ArrowRight") navigatePreview(1);
+      }
     });
 
     // Tools category tabs (per-section)
@@ -1687,6 +2593,168 @@ import ToolsPanel from "../components/ToolsPanel.astro";
           renderConvertBar();
         }
       });
+    }
+
+    // ─── Download event listeners ─────────────────────────────
+    document
+      .getElementById("dl-install-btn")
+      ?.addEventListener("click", handleInstallYtDlp);
+    document
+      .getElementById("dl-fetch-btn")
+      ?.addEventListener("click", handleFetchVideoInfo);
+    document
+      .getElementById("dl-start-btn")
+      ?.addEventListener("click", handleStartDownload);
+
+    // URL input: Enter to fetch
+    document
+      .getElementById("dl-url-input")
+      ?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") handleFetchVideoInfo();
+      });
+
+    // URL input: auto-detect platform from paste
+    document.getElementById("dl-url-input")?.addEventListener("input", () => {
+      const val = (
+        document.getElementById("dl-url-input") as HTMLInputElement
+      ).value.toLowerCase();
+      if (val.includes("youtube.com") || val.includes("youtu.be")) {
+        dlPlatform = "youtube";
+      } else if (val.includes("tiktok.com")) {
+        dlPlatform = "tiktok";
+      }
+      document
+        .querySelectorAll("#dl-platform-tabs .dl-platform-tab")
+        .forEach((t) => {
+          t.classList.toggle(
+            "active",
+            (t as HTMLElement).dataset.platform === dlPlatform,
+          );
+        });
+    });
+
+    // Platform tabs
+    document
+      .querySelectorAll("#dl-platform-tabs .dl-platform-tab")
+      .forEach((btn) => {
+        btn.addEventListener("click", () => {
+          dlPlatform = (btn as HTMLElement).dataset.platform as
+            | "youtube"
+            | "tiktok";
+          document
+            .querySelectorAll("#dl-platform-tabs .dl-platform-tab")
+            .forEach((t) => t.classList.remove("active"));
+          btn.classList.add("active");
+          const input = document.getElementById(
+            "dl-url-input",
+          ) as HTMLInputElement;
+          if (dlPlatform === "youtube") {
+            input.placeholder = "Paste YouTube URL here...";
+          } else {
+            input.placeholder = "Paste TikTok URL here...";
+          }
+        });
+      });
+
+    // Format buttons
+    document.querySelectorAll("#dl-format-btns .dl-fmt-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        dlFormat = (btn as HTMLElement).dataset.dlFormat || "mp4";
+        document
+          .querySelectorAll("#dl-format-btns .dl-fmt-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        // Hide quality buttons for audio formats
+        const qualSection = document.querySelector(
+          ".dl-quality-section",
+        ) as HTMLElement;
+        const isAudio = ["mp3", "m4a", "wav", "flac", "ogg"].includes(dlFormat);
+        if (qualSection) qualSection.style.display = isAudio ? "none" : "flex";
+      });
+    });
+
+    // Quality buttons
+    document
+      .querySelectorAll("#dl-quality-btns .dl-qual-btn")
+      .forEach((btn) => {
+        btn.addEventListener("click", () => {
+          dlQuality = (btn as HTMLElement).dataset.dlQuality || "best";
+          document
+            .querySelectorAll("#dl-quality-btns .dl-qual-btn")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+        });
+      });
+
+    // Output dir for downloads
+    document
+      .getElementById("dl-output-btn")
+      ?.addEventListener("click", async () => {
+        if (!api) return;
+        const dir = await api.selectOutputDir();
+        if (dir) {
+          dlOutputDir = dir;
+          document.getElementById("dl-output-label")!.textContent =
+            dir.length > 35 ? "..." + dir.slice(-32) : dir;
+          updateDlStartBtn();
+        }
+      });
+
+    // Proxy settings
+    const proxyToggle = document.getElementById("dl-proxy-toggle");
+    const proxyPanel = document.getElementById("dl-proxy-panel");
+    const proxyInput = document.getElementById(
+      "dl-proxy-input",
+    ) as HTMLInputElement;
+    const proxySave = document.getElementById("dl-proxy-save");
+
+    proxyToggle?.addEventListener("click", () => {
+      const visible = proxyPanel!.style.display !== "none";
+      proxyPanel!.style.display = visible ? "none" : "flex";
+      proxyToggle!.classList.toggle("active", !visible);
+    });
+
+    proxySave?.addEventListener("click", async () => {
+      if (!api) return;
+      const val = proxyInput?.value?.trim() || "";
+      await api.setProxy(val);
+      proxySave!.textContent = "Saved!";
+      setTimeout(() => {
+        proxySave!.textContent = "Save";
+      }, 1200);
+    });
+
+    // Load saved proxy on init
+    if (api) {
+      api.getProxy().then((p: string) => {
+        if (p && proxyInput) {
+          proxyInput.value = p;
+          proxyToggle?.classList.add("active");
+        }
+      });
+    }
+
+    // Download progress listener
+    if (api) {
+      api.onDownloadProgress(
+        (data: {
+          url: string;
+          percent: number;
+          totalSize: string;
+          currentSpeed: string;
+          eta: string;
+        }) => {
+          const pct = Math.round(data.percent || 0);
+          document.getElementById("dl-progress-fill")!.style.width = pct + "%";
+          document.getElementById("dl-progress-pct")!.textContent = pct + "%";
+          if (data.currentSpeed)
+            document.getElementById("dl-progress-speed")!.textContent =
+              data.currentSpeed;
+          if (data.eta)
+            document.getElementById("dl-progress-eta")!.textContent =
+              "ETA: " + data.eta;
+        },
+      );
     }
 
     render();

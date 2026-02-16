@@ -17,10 +17,13 @@ async function getMupdf() {
 
 // ── Media type detection ──────────────────────────────────────
 
-const VIDEO_EXTS = new Set(['.mp4','.mkv','.avi','.mov','.webm','.flv','.wmv']);
-const AUDIO_EXTS = new Set(['.mp3','.wav','.ogg','.flac','.aac','.wma','.m4a']);
-const IMAGE_EXTS = new Set(['.jpg','.jpeg','.png','.gif','.bmp','.tiff','.webp','.svg','.avif','.heic']);
+const VIDEO_EXTS = new Set(['.mp4','.mkv','.avi','.mov','.webm','.flv','.wmv','.ts','.m2ts','.mts','.3gp','.ogv','.vob','.mpg','.mpeg','.m4v','.divx','.asf','.rm','.rmvb','.f4v']);
+const AUDIO_EXTS = new Set(['.mp3','.wav','.ogg','.flac','.aac','.wma','.m4a','.opus','.alac','.aiff','.ape','.ac3','.dts','.amr','.au','.ra','.wv']);
+const IMAGE_EXTS = new Set(['.jpg','.jpeg','.png','.gif','.bmp','.tiff','.tif','.webp','.svg','.avif','.heic','.heif','.ico','.jxl','.jp2','.psd','.raw','.cr2','.nef','.dng']);
 const PDF_EXTS = new Set(['.pdf']);
+
+// Audio formats for video→audio extraction detection
+const AUDIO_OUTPUT_FORMATS = new Set(['mp3','wav','ogg','flac','aac','m4a','wma','opus','aiff','ac3','alac']);
 
 // Formats Sharp handles natively
 const SHARP_OUTPUT = new Set(['jpg','jpeg','png','webp','avif','tiff','gif','heif']);
@@ -59,6 +62,11 @@ async function processFile(job, onProgress) {
   }
   if (outputFormat === 'pdf' && mediaType === 'image') {
     return convertImageToPdf(filePath, safePath, quality, onProgress);
+  }
+
+  // Video → Audio extraction (e.g., mp4 → mp3, mkv → m4a)
+  if (mediaType === 'video' && AUDIO_OUTPUT_FORMATS.has(outputFormat)) {
+    return extractAudioFromVideo(filePath, safePath, outputFormat, quality, onProgress);
   }
 
   switch (mediaType) {
@@ -111,24 +119,22 @@ function convertVideo(input, output, format, quality, onProgress, isCompress) {
       })
       .on('error', (err) => reject(err));
 
-    if (['mp4', 'mkv', 'webm', 'avi', 'mov'].includes(format)) {
+    if (['mp4', 'mkv', 'webm', 'avi', 'mov', 'ts', '3gp', 'ogv', 'm4v', 'flv', 'wmv'].includes(format)) {
       if (isCompress) {
-        // Compress mode: quality 100→CRF 18, quality 50→CRF 28, quality 1→CRF 40
-        const crf = Math.round(40 - (quality / 100) * 22);
-        const preset = quality > 70 ? 'slow' : quality > 40 ? 'medium' : 'faster';
-        if (format === 'webm') {
+        // Compress mode: preserve quality — CRF 18-28 range (lower = better quality)
+        const crf = Math.round(28 - (quality / 100) * 10);
+        const preset = quality > 70 ? 'slow' : 'medium';
+        if (format === 'webm' || format === 'ogv') {
           command.videoCodec('libvpx-vp9').addOptions([`-crf`, `${crf}`, `-b:v`, `0`]);
         } else {
           command.videoCodec('libx264').addOptions([`-crf`, `${crf}`, `-preset`, `${preset}`]);
         }
-        // Scale down if quality is low to further reduce size
-        if (quality < 50) {
-          command.addOptions(['-vf', 'scale=iw*3/4:ih*3/4']);
-        }
+        // Copy audio at good quality instead of re-encoding
+        command.audioCodec('aac').audioBitrate('192k');
       } else {
-        // Convert mode: quality 100→CRF 0, quality 1→CRF 51
-        const crf = Math.round(51 - (quality / 100) * 51);
-        if (format === 'webm') {
+        // Convert mode: quality 100→CRF 0, quality 1→CRF 40
+        const crf = Math.round(40 - (quality / 100) * 40);
+        if (format === 'webm' || format === 'ogv') {
           command.videoCodec('libvpx-vp9').addOptions([`-crf`, `${crf}`, `-b:v`, `0`]);
         } else {
           command.videoCodec('libx264').addOptions([`-crf`, `${crf}`, `-preset`, `medium`]);
@@ -165,14 +171,52 @@ function convertAudio(input, output, format, quality, onProgress, isCompress) {
       .on('error', (err) => reject(err));
 
     if (isCompress) {
-      // Compress mode: quality 100→128kbps, quality 50→64kbps, quality 1→32kbps
-      const bitrate = Math.round(32 + (quality / 100) * 96);
+      // Compress mode: preserve quality — 128-256kbps range, no sample rate reduction
+      const bitrate = Math.round(128 + (quality / 100) * 128);
       command.audioBitrate(`${bitrate}k`);
-      // Also reduce sample rate for lower quality
-      if (quality < 50) command.audioFrequency(22050);
     } else {
-      // Convert mode: quality 100→320kbps, quality 1→32kbps
-      const bitrate = Math.round(32 + (quality / 100) * 288);
+      // Convert mode: quality 100→320kbps, quality 1→64kbps
+      const bitrate = Math.round(64 + (quality / 100) * 256);
+      command.audioBitrate(`${bitrate}k`);
+    }
+
+    command.save(output);
+  });
+}
+
+// ── Video → Audio extraction ──────────────────────────────────
+
+function extractAudioFromVideo(input, output, format, quality, onProgress) {
+  return new Promise((resolve, reject) => {
+    let totalDuration = 0;
+
+    const command = ffmpeg(input)
+      .noVideo()
+      .toFormat(ffmpegFormatAlias(format))
+      .on('codecData', (data) => {
+        totalDuration = parseDuration(data.duration);
+      })
+      .on('progress', (progress) => {
+        if (totalDuration > 0) {
+          const current = parseDuration(progress.timemark);
+          const pct = Math.min(100, Math.round((current / totalDuration) * 100));
+          onProgress(pct);
+        }
+      })
+      .on('end', () => {
+        onProgress(100);
+        resolve(output);
+      })
+      .on('error', (err) => reject(err));
+
+    // Set quality based on format
+    if (['wav', 'flac', 'alac', 'aiff'].includes(format)) {
+      // Lossless — no bitrate needed
+      if (format === 'flac') command.audioCodec('flac');
+      if (format === 'alac') command.audioCodec('alac');
+    } else {
+      // Lossy — quality maps to bitrate: 100→320k, 50→192k, 1→64k
+      const bitrate = Math.round(64 + (quality / 100) * 256);
       command.audioBitrate(`${bitrate}k`);
     }
 
@@ -190,18 +234,13 @@ async function convertImage(input, output, format, quality, onProgress, isCompre
   if (SHARP_OUTPUT.has(fmt)) {
     let pipeline = sharp(input);
 
-    // For compress mode, reduce quality further and optionally resize
+    // For compress mode, use smart compression without destroying quality
     let effectiveQuality = Math.round(quality);
     if (isCompress) {
-      // Map quality 100→70, 50→35, 1→5 for aggressive compression
-      effectiveQuality = Math.max(5, Math.round(quality * 0.7));
-      // Resize if quality is very low (< 40%) for extra savings
-      if (quality < 40) {
-        const meta = await sharp(input).metadata();
-        if (meta.width && meta.width > 800) {
-          pipeline = pipeline.resize({ width: Math.round(meta.width * 0.75), withoutEnlargement: true });
-        }
-      }
+      // Gentle quality reduction: quality 100→92, 80→74, 50→50
+      effectiveQuality = Math.max(30, Math.round(quality * 0.92));
+      // Strip metadata for smaller file size
+      pipeline = pipeline.withMetadata(false);
     }
 
     const opts = { quality: effectiveQuality };
@@ -213,8 +252,8 @@ async function convertImage(input, output, format, quality, onProgress, isCompre
         break;
       case 'png':
         if (isCompress) {
-          // Max compression level (9) with reduced colors
-          pipeline = pipeline.png({ compressionLevel: 9, palette: quality < 60 });
+          // High compression level with adaptive filtering, no palette reduction to preserve quality
+          pipeline = pipeline.png({ compressionLevel: 9, adaptiveFiltering: true, effort: 10 });
         } else {
           pipeline = pipeline.png({ compressionLevel: Math.round(9 - (quality / 100) * 9) });
         }
@@ -252,7 +291,69 @@ async function convertImage(input, output, format, quality, onProgress, isCompre
     return output;
   }
 
+  if (fmt === 'ico') {
+    return convertImageToIco(input, output, onProgress);
+  }
+
   throw new Error(`Unsupported image output format: ${format}`);
+}
+
+// ── Image → ICO conversion ────────────────────────────────────
+
+async function convertImageToIco(input, output, onProgress) {
+  // Standard ICO sizes (largest first for best quality)
+  const sizes = [256, 128, 64, 48, 32, 16];
+  onProgress(10);
+
+  // Generate PNG buffers at each size
+  const pngBuffers = [];
+  for (let i = 0; i < sizes.length; i++) {
+    const size = sizes[i];
+    const buf = await sharp(input)
+      .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png()
+      .toBuffer();
+    pngBuffers.push(buf);
+    onProgress(10 + Math.round((i + 1) / sizes.length * 60));
+  }
+
+  // Build ICO file structure
+  const numImages = pngBuffers.length;
+  const headerSize = 6;
+  const dirEntrySize = 16;
+  const dirSize = dirEntrySize * numImages;
+  let dataOffset = headerSize + dirSize;
+
+  // ICONDIR header: reserved(2) + type(2, 1=ICO) + count(2)
+  const header = Buffer.alloc(headerSize);
+  header.writeUInt16LE(0, 0);          // reserved
+  header.writeUInt16LE(1, 2);          // type = ICO
+  header.writeUInt16LE(numImages, 4);  // image count
+
+  // ICONDIRENTRY array
+  const dirEntries = Buffer.alloc(dirSize);
+  for (let i = 0; i < numImages; i++) {
+    const size = sizes[i];
+    const offset = i * dirEntrySize;
+    dirEntries.writeUInt8(size >= 256 ? 0 : size, offset);      // width (0 = 256)
+    dirEntries.writeUInt8(size >= 256 ? 0 : size, offset + 1);  // height (0 = 256)
+    dirEntries.writeUInt8(0, offset + 2);                        // color palette
+    dirEntries.writeUInt8(0, offset + 3);                        // reserved
+    dirEntries.writeUInt16LE(1, offset + 4);                     // color planes
+    dirEntries.writeUInt16LE(32, offset + 6);                    // bits per pixel
+    dirEntries.writeUInt32LE(pngBuffers[i].length, offset + 8);  // image data size
+    dirEntries.writeUInt32LE(dataOffset, offset + 12);            // image data offset
+    dataOffset += pngBuffers[i].length;
+  }
+
+  onProgress(80);
+
+  // Write the ICO file
+  const icoBuffer = Buffer.concat([header, dirEntries, ...pngBuffers]);
+  fs.writeFileSync(output, icoBuffer);
+
+  onProgress(100);
+  return output;
 }
 
 // ── PDF → Image conversion (mupdf) ───────────────────────────
@@ -371,6 +472,14 @@ function ffmpegFormatAlias(format) {
     webm: 'webm',
     flv: 'flv',
     wmv: 'asf',
+    ts: 'mpegts',
+    m2ts: 'mpegts',
+    mts: 'mpegts',
+    '3gp': '3gp',
+    ogv: 'ogg',
+    m4v: 'mp4',
+    mpg: 'mpeg',
+    mpeg: 'mpeg',
     mp3: 'mp3',
     wav: 'wav',
     ogg: 'ogg',
@@ -378,6 +487,10 @@ function ffmpegFormatAlias(format) {
     aac: 'adts',
     wma: 'asf',
     m4a: 'ipod',
+    opus: 'opus',
+    aiff: 'aiff',
+    ac3: 'ac3',
+    alac: 'ipod',
   };
   return map[format] || format;
 }

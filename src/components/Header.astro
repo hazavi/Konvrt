@@ -5,23 +5,7 @@
 <header>
   <div class="header-left">
     <div class="brand">
-      <svg
-        class="logo"
-        viewBox="0 0 28 28"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <rect width="28" height="28" rx="7" fill="url(#logo-grad)"></rect>
-        <path d="M8 19V9l6 5-6 5zm6-5l6-5v10l-6-5z" fill="white" opacity=".92"
-        ></path>
-        <defs
-          ><linearGradient id="logo-grad" x1="0" y1="0" x2="28" y2="28"
-            ><stop stop-color="#9d8ff8"></stop><stop
-              offset="1"
-              stop-color="#6c5ce7"></stop></linearGradient
-          ></defs
-        >
-      </svg>
+      <img class="logo" src="/favicon.ico" alt="Konvrt" width="24" height="24" />
       <span class="brand-text">Konvrt</span>
     </div>
     <nav class="tabs" id="nav-tabs">
@@ -66,6 +50,25 @@
         >
         Compress
       </button>
+      <button class="tab" data-tab="download">
+        <svg
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          ><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline
+            points="7 10 12 15 17 10"></polyline><line
+            x1="12"
+            y1="15"
+            x2="12"
+            y2="3"></line></svg
+        >
+        Download
+      </button>
       <button class="tab" data-tab="tools">
         <svg
           width="15"
@@ -100,17 +103,38 @@
     justify-content: space-between;
     padding: 0 20px;
     padding-top: env(titlebar-area-height, 0px);
-    height: calc(52px + env(titlebar-area-height, 0px));
+    height: calc(48px + env(titlebar-area-height, 0px));
     border-bottom: 1px solid var(--border);
-    background: var(--surface);
+    background: linear-gradient(
+      180deg,
+      rgba(14, 14, 22, 0.95) 0%,
+      rgba(6, 6, 11, 0.98) 100%
+    );
+    backdrop-filter: blur(12px);
     -webkit-app-region: drag;
     user-select: none;
     flex-shrink: 0;
+    position: relative;
+  }
+  header::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--accent-glow-strong) 50%,
+      transparent 100%
+    );
+    pointer-events: none;
   }
   .header-left {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 20px;
   }
   .brand {
     display: flex;
@@ -118,43 +142,55 @@
     gap: 8px;
   }
   .logo {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    object-fit: contain;
   }
   .brand-text {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #eaeaf0, #a0a0b8);
+    background: linear-gradient(135deg, #f0f0fa 0%, #a0a0c0 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   .tabs {
     display: flex;
-    gap: 2px;
+    gap: 1px;
+    padding: 2px;
+    background: var(--surface-2);
+    border-radius: var(--radius-sm);
     -webkit-app-region: no-drag;
   }
   .tab {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 6px 14px;
+    padding: 5px 14px;
     border: none;
-    border-radius: var(--radius-sm);
+    border-radius: 5px;
     background: transparent;
     color: var(--text-dim);
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
     transition: all var(--transition);
+    position: relative;
   }
   .tab:hover {
     color: var(--text-secondary);
-    background: var(--surface-2);
   }
   .tab.active {
-    color: var(--accent-light);
-    background: var(--accent-glow);
+    color: #fff;
+    background: var(--accent);
+    box-shadow: 0 1px 6px var(--accent-glow);
+  }
+  .tab svg {
+    opacity: 0.6;
+  }
+  .tab.active svg {
+    opacity: 1;
   }
   .header-right {
     display: flex;
@@ -163,11 +199,12 @@
     -webkit-app-region: no-drag;
   }
   .version-badge {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 600;
     color: var(--text-dim);
-    padding: 2px 8px;
+    padding: 2px 7px;
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 8px;
+    letter-spacing: 0.3px;
   }
 </style>
