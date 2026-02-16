@@ -6,8 +6,62 @@ const { processFile } = require('./converter.cjs');
 const { isYtDlpInstalled, installYtDlp, getVideoInfo, downloadMedia, getProxySetting, setProxySetting } = require('./downloader/index.cjs');
 
 let mainWindow;
+let prodServer;
 const isDev = !app.isPackaged;
 const DEV_URL = 'http://localhost:4321';
+
+// ── Static file server for production builds ───────────────────
+const MIME_TYPES = {
+  '.html': 'text/html',
+  '.css': 'text/css',
+  '.js': 'application/javascript',
+  '.mjs': 'application/javascript',
+  '.json': 'application/json',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+};
+
+function startStaticServer(distPath) {
+  return new Promise((resolve) => {
+    const server = http.createServer((req, res) => {
+      const urlPath = decodeURIComponent(req.url.split('?')[0]);
+      let filePath = path.join(distPath, urlPath === '/' ? 'index.html' : urlPath);
+
+      // Security: prevent path traversal
+      if (!filePath.startsWith(distPath)) {
+        res.writeHead(403); res.end(); return;
+      }
+
+      fs.readFile(filePath, (err, data) => {
+        if (err) {
+          // Fallback to index.html for SPA-like routes
+          if (err.code === 'ENOENT') {
+            res.writeHead(404); res.end();
+          } else {
+            res.writeHead(500); res.end();
+          }
+          return;
+        }
+        const ext = path.extname(filePath).toLowerCase();
+        res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
+        res.end(data);
+      });
+    });
+    server.listen(0, '127.0.0.1', () => {
+      const port = server.address().port;
+      console.log(`[Konvrt] Static server running on http://127.0.0.1:${port}`);
+      resolve(server);
+    });
+  });
+}
 
 function waitForServer(url, maxRetries = 50, interval = 500) {
   return new Promise((resolve, reject) => {
@@ -35,7 +89,7 @@ function createWindow() {
     minWidth: 900,
     minHeight: 600,
     title: 'Konvrt',
-    icon: path.join(__dirname, '..', 'public', 'favicon.ico'),
+    icon: path.join(__dirname, '..', 'public', 'konvrt_ico.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -65,13 +119,20 @@ function createWindow() {
         app.quit();
       });
   } else {
-    mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
+    const distPath = path.join(__dirname, '..', 'dist');
+    startStaticServer(distPath).then((server) => {
+      prodServer = server;
+      const port = server.address().port;
+      console.log('[Konvrt] Loading production build...');
+      mainWindow.loadURL(`http://127.0.0.1:${port}`);
+    });
   }
 }
 
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
+  if (prodServer) prodServer.close();
   if (process.platform !== 'darwin') app.quit();
 });
 
