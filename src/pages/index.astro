@@ -11,6 +11,8 @@ import DownloadView from "../components/DownloadView.astro";
 <Layout>
   <div id="app">
     <Header />
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container"></div>
     <main id="main-content">
       <!-- Convert/Compress view -->
       <div id="view-convert">
@@ -46,6 +48,18 @@ import DownloadView from "../components/DownloadView.astro";
     flex-direction: column;
     gap: 10px;
     flex: 1;
+  }
+  /* Toast container */
+  .toast-container {
+    position: fixed;
+    top: 52px;
+    right: 16px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+    max-width: 380px;
   }
 </style>
 

@@ -4,6 +4,53 @@ import {
 } from "./state";
 import { escapeHtml, formatDuration } from "./helpers";
 
+// ── Toast system ──
+function showToast(title: string, meta: string, status: "success" | "error", duration = 5000) {
+  const container = document.getElementById("toast-container");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.className = `toast ${status}`;
+  toast.style.position = "relative";
+  toast.style.overflow = "hidden";
+
+  const iconSvg = status === "success"
+    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+  toast.innerHTML = `
+    <div class="toast-icon ${status}">${iconSvg}</div>
+    <div class="toast-body">
+      <div class="toast-title">${escapeHtml(title)}</div>
+      <div class="toast-meta">${escapeHtml(meta)}</div>
+    </div>
+    <button class="toast-close" title="Dismiss">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="toast-progress" style="width: 100%;"></div>
+  `;
+
+  container.appendChild(toast);
+
+  // Close button
+  const closeBtn = toast.querySelector(".toast-close")!;
+  const dismissToast = () => {
+    toast.classList.add("toast-exit");
+    setTimeout(() => toast.remove(), 250);
+  };
+  closeBtn.addEventListener("click", dismissToast);
+
+  // Animate progress bar
+  const progressBar = toast.querySelector(".toast-progress") as HTMLElement;
+  requestAnimationFrame(() => {
+    progressBar.style.transitionDuration = duration + "ms";
+    progressBar.style.width = "0%";
+  });
+
+  // Auto-dismiss
+  setTimeout(dismissToast, duration);
+}
+
 export async function checkYtDlpAndRender() {
   const api = (window as any).konvrt;
   if (!api) return;
@@ -131,6 +178,8 @@ export async function handleStartDownload() {
       status: "success",
       outputPath: result.outputPath,
     });
+
+    showToast(dlVideoInfo.title, `${dlFormat.toUpperCase()} — Downloaded`, "success", 5000);
   } else {
     startBtn.innerHTML =
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Failed';
@@ -144,9 +193,13 @@ export async function handleStartDownload() {
       status: "error",
       error: result.error,
     });
+
+    showToast(dlVideoInfo?.title || "Unknown", `${dlFormat.toUpperCase()} — ${result.error || "Failed"}`, "error", 6000);
   }
 
-  renderDlHistory();
+  // Show the clear/new download button
+  const actionsRow = document.getElementById("dl-actions-row");
+  if (actionsRow) actionsRow.style.display = "flex";
 
   // Reset after delay
   setTimeout(() => {
@@ -159,25 +212,36 @@ export async function handleStartDownload() {
   }, 3000);
 }
 
-export function renderDlHistory() {
-  const container = document.getElementById("dl-history")!;
-  container.innerHTML = dlHistory
-    .map(
-      (item) => `
-    <div class="dl-history-item">
-      <div class="dl-history-icon ${item.status}">
-        ${
-          item.status === "success"
-            ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
-            : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
-        }
-      </div>
-      <div class="dl-history-details">
-        <div class="dl-history-name">${escapeHtml(item.title)}</div>
-        <div class="dl-history-meta">${item.format} - ${item.status === "success" ? "Downloaded" : item.error || "Failed"}</div>
-      </div>
-    </div>
-  `,
-    )
-    .join("");
+export function clearDownloadView() {
+  // Reset URL input
+  const input = document.getElementById("dl-url-input") as HTMLInputElement;
+  if (input) {
+    input.value = "";
+    input.disabled = false;
+    input.style.opacity = "1";
+  }
+
+  // Hide info card, options, progress
+  const infoCard = document.getElementById("dl-info-card");
+  const options = document.getElementById("dl-options");
+  const progress = document.getElementById("dl-progress");
+  const actionsRow = document.getElementById("dl-actions-row");
+  if (infoCard) infoCard.style.display = "none";
+  if (options) options.style.display = "none";
+  if (progress) progress.style.display = "none";
+  if (actionsRow) actionsRow.style.display = "none";
+
+  // Reset start button
+  const startBtn = document.getElementById("dl-start-btn") as HTMLButtonElement;
+  if (startBtn) {
+    startBtn.classList.remove("done", "downloading");
+    startBtn.innerHTML =
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download';
+    startBtn.disabled = true;
+  }
+
+  // Reset video info
+  setDlVideoInfo(null);
+  setDlIsDownloading(false);
+  updateDlStartBtn();
 }

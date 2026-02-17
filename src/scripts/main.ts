@@ -16,7 +16,7 @@ import { addFiles, updateSelectedType } from "./file-ops";
 import { startConversion } from "./convert";
 import {
   checkYtDlpAndRender, handleInstallYtDlp, handleFetchVideoInfo,
-  handleStartDownload, updateDlStartBtn,
+  handleStartDownload, updateDlStartBtn, clearDownloadView,
 } from "./download";
 import { openPreview, closePreview, navigatePreview } from "./preview";
 
@@ -216,6 +216,9 @@ export function init() {
   document
     .getElementById("dl-start-btn")
     ?.addEventListener("click", handleStartDownload);
+  document
+    .getElementById("dl-clear-btn")
+    ?.addEventListener("click", clearDownloadView);
 
   // URL input: Enter to fetch
   document
