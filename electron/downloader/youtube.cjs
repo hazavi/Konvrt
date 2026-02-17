@@ -34,22 +34,33 @@ function extractYouTubeId(url) {
 const INNERTUBE_KEY = 'AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w';
 const INNERTUBE_HOSTS = ['www.youtube.com', 'youtubei.googleapis.com', 'm.youtube.com'];
 
+// Client configs for InnerTube — different clients may return different CDN servers
+const INNERTUBE_CLIENTS = [
+  { clientName: 'ANDROID', clientVersion: '19.09.36', androidSdkVersion: 34, label: 'android' },
+  { clientName: 'WEB', clientVersion: '2.20240304.00.00', label: 'web' },
+  { clientName: 'IOS', clientVersion: '19.09.3', label: 'ios' },
+];
+
 /**
- * Fetch YouTube InnerTube player data (Android client).
+ * Fetch YouTube InnerTube player data.
  * Tries multiple hostnames with a race — uses whichever responds first.
+ * @param {string} videoId
+ * @param {number} clientIdx - Index into INNERTUBE_CLIENTS (0 = ANDROID, 1 = WEB, 2 = IOS)
  */
-async function fetchInnerTubePlayer(videoId) {
+async function fetchInnerTubePlayer(videoId, clientIdx = 0) {
+  const clientConfig = INNERTUBE_CLIENTS[clientIdx] || INNERTUBE_CLIENTS[0];
+  const ctx = { clientName: clientConfig.clientName, clientVersion: clientConfig.clientVersion };
+  if (clientConfig.androidSdkVersion) ctx.androidSdkVersion = clientConfig.androidSdkVersion;
+
   const body = JSON.stringify({
     videoId,
-    context: {
-      client: { clientName: 'ANDROID', clientVersion: '19.09.36', androidSdkVersion: 34 },
-    },
+    context: { client: ctx },
   });
   const apiPath = `/youtubei/v1/player?key=${INNERTUBE_KEY}`;
 
   const result = await Promise.any(
     INNERTUBE_HOSTS.map((host) =>
-      httpsPost(host, apiPath, body, 10000).then((raw) => {
+      httpsPost(host, apiPath, body, 20000).then((raw) => {
         const parsed = JSON.parse(raw);
         if (!parsed.playabilityStatus) throw new Error('Invalid response from ' + host);
         return parsed;
@@ -185,22 +196,28 @@ async function downloadYouTube(job, onProgress) {
   const isAudio = ['mp3', 'aac', 'm4a', 'wav', 'flac', 'ogg', 'opus'].includes(format);
 
   // ── Try direct download FIRST (fastest, proper headers) ──────
-  if (onProgress) onProgress({ percent: 2, totalSize: '', currentSpeed: '', eta: 'Starting download...' });
+  // Skip direct download if proxy is configured (direct https doesn't support proxies)
+  const proxy = getProxySetting();
+  if (!proxy) {
+    if (onProgress) onProgress({ percent: 2, totalSize: '', currentSpeed: '', eta: 'Starting download...' });
 
-  try {
-    const result = await downloadYouTubeDirect(
-      { videoId, title, format, quality, outputDir, isAudio, allFormats, adaptiveFormats, combinedFormats },
-      onProgress
-    );
-    try { fs.unlinkSync(infoJsonPath); } catch {}
-    return result;
-  } catch (directErr) {
-    console.log('[Konvrt] Direct download failed:', directErr.message, '— trying yt-dlp...');
+    try {
+      const result = await downloadYouTubeDirect(
+        { videoId, title, format, quality, outputDir, isAudio, allFormats, adaptiveFormats, combinedFormats },
+        onProgress
+      );
+      try { fs.unlinkSync(infoJsonPath); } catch {}
+      return result;
+    } catch (directErr) {
+      console.log('[Konvrt] Direct download failed:', directErr.message, '- trying yt-dlp...');
+    }
+  } else {
+    console.log('[Konvrt] Proxy configured, skipping direct download, using yt-dlp...');
   }
 
-  // ── Fallback: try yt-dlp with --load-info-json ───────────────
+  // ── Fallback 1: yt-dlp with --load-info-json (Android CDN URLs) ──
   if (isYtDlpInstalled()) {
-    if (onProgress) onProgress({ percent: 2, totalSize: '', currentSpeed: '', eta: 'Retrying with yt-dlp...' });
+    if (onProgress) onProgress({ percent: 2, totalSize: '', currentSpeed: '', eta: proxy ? 'Downloading via proxy...' : 'Retrying with yt-dlp...' });
     try {
       const result = await downloadYouTubeViaYtDlp(
         { videoId, title, format, quality, outputDir, isAudio, infoJsonPath },
@@ -208,15 +225,59 @@ async function downloadYouTube(job, onProgress) {
       );
       return result;
     } catch (err) {
-      const proxy = getProxySetting();
-      const hint = proxy
-        ? ''
-        : '\n\nYour network may be blocking YouTube. Try setting a proxy (globe icon) or use a different network.';
-      throw new Error(err.message + hint);
+      console.log('[Konvrt] yt-dlp with info-json failed:', err.message, '- trying alt CDN...');
     }
   }
 
-  throw new Error('Download failed. Your network may be blocking YouTube CDN servers.');
+  // ── Fallback 2: Try alternate InnerTube clients for different CDN servers ──
+  if (!proxy) {
+    for (let ci = 1; ci < INNERTUBE_CLIENTS.length; ci++) {
+      try {
+        const clientLabel = INNERTUBE_CLIENTS[ci].label;
+        console.log(`[Konvrt] Trying InnerTube ${clientLabel} client...`);
+        if (onProgress) onProgress({ percent: 2, totalSize: '', currentSpeed: '', eta: `Trying ${clientLabel} CDN...` });
+        const altPlayer = await fetchInnerTubePlayer(videoId, ci);
+        if (altPlayer.playabilityStatus?.status !== 'OK') continue;
+
+        const altAdaptive = altPlayer.streamingData?.adaptiveFormats || [];
+        const altCombined = altPlayer.streamingData?.formats || [];
+        const altAll = [...altAdaptive, ...altCombined];
+        if (altAll.filter(f => f.url).length === 0) continue;
+
+        const result = await downloadYouTubeDirect(
+          { videoId, title, format, quality, outputDir, isAudio, allFormats: altAll, adaptiveFormats: altAdaptive, combinedFormats: altCombined },
+          onProgress
+        );
+        try { fs.unlinkSync(infoJsonPath); } catch {}
+        return result;
+      } catch (err) {
+        console.log(`[Konvrt] Alt client ${INNERTUBE_CLIENTS[ci].label} failed:`, err.message);
+      }
+    }
+  }
+
+  // ── Fallback 3: Let yt-dlp handle everything natively (own extraction) ──
+  if (isYtDlpInstalled()) {
+    console.log('[Konvrt] Trying native yt-dlp extraction (no info-json)...');
+    if (onProgress) onProgress({ percent: 2, totalSize: '', currentSpeed: '', eta: 'Trying native yt-dlp...' });
+    try {
+      const result = await downloadYouTubeNative(
+        { url: `https://www.youtube.com/watch?v=${videoId}`, title, format, quality, outputDir, isAudio },
+        onProgress
+      );
+      try { fs.unlinkSync(infoJsonPath); } catch {}
+      return result;
+    } catch (err) {
+      try { fs.unlinkSync(infoJsonPath); } catch {}
+      const hint = proxy
+        ? 'Download failed. Your proxy may not be working -- try a different proxy address.'
+        : 'Your network may be blocking YouTube CDN servers.\nSet a proxy (globe icon) or use a different network.';
+      throw new Error(hint);
+    }
+  }
+
+  try { fs.unlinkSync(infoJsonPath); } catch {}
+  throw new Error('Download failed. Your network may be blocking YouTube CDN servers. Try setting a proxy in download settings.');
 }
 
 // ── yt-dlp based YouTube download ────────────────────────────
@@ -252,10 +313,10 @@ function downloadYouTubeViaYtDlp(opts, onProgress) {
     '--no-check-formats',
     '--newline',
     '--progress',
-    '--force-ipv4',
-    '--socket-timeout', '15',
-    '--retries', '1',
-    '--fragment-retries', '1',
+    '--geo-bypass',
+    '--socket-timeout', '30',
+    '--retries', '5',
+    '--fragment-retries', '5',
     '--add-header', 'User-Agent:com.google.android.youtube/19.09.36 (Linux; U; Android 14; en_US) gzip',
   );
 
@@ -269,7 +330,7 @@ function downloadYouTubeViaYtDlp(opts, onProgress) {
     let lastOutputPath = '';
     let hasResolved = false;
     let allOutput = '';
-    const IDLE_TIMEOUT_MS = 20000;
+    const IDLE_TIMEOUT_MS = 60000;
     let idleTimer = null;
 
     function resetIdleTimer() {
@@ -280,8 +341,8 @@ function downloadYouTubeViaYtDlp(opts, onProgress) {
           try { proc.kill('SIGTERM'); } catch {}
           try { fs.unlinkSync(infoJsonPath); } catch {}
           const hint = proxy
-            ? 'Download timed out. Your proxy may not be working — check the proxy address.'
-            : 'Download timed out — your network may be blocking YouTube.\nSet a proxy (e.g. socks5://127.0.0.1:1080) in the download settings.';
+            ? 'Download timed out. Your proxy may not be working -- check the proxy address.'
+            : 'Download timed out -- your network may be blocking YouTube.\nSet a proxy (e.g. socks5://127.0.0.1:1080) in the download settings.';
           reject(new Error(hint));
         }
       }, IDLE_TIMEOUT_MS);
@@ -549,6 +610,155 @@ function findRecentFile(dir) {
     }
     return null;
   } catch { return null; }
+}
+
+/**
+ * Native yt-dlp download — lets yt-dlp extract streams itself (different CDN strategy).
+ * Used as final fallback when pre-fetched InnerTube URLs fail.
+ */
+function downloadYouTubeNative(opts, onProgress) {
+  const { url, title, format, quality, outputDir, isAudio } = opts;
+  const safeTitle = (title || 'video').replace(/[<>:"/\\|?*]/g, '_').substring(0, 200);
+  const outputTemplate = path.join(outputDir, '%(title)s.%(ext)s');
+
+  const args = [url];
+
+  if (isAudio) {
+    const aq = quality === 'best' || quality === '1080' ? '0' : quality === '720' ? '3' : '5';
+    args.push('-x', '--audio-format', format, '--audio-quality', aq);
+  } else {
+    let formatSpec;
+    if (quality === 'best') {
+      formatSpec = 'bestvideo+bestaudio/best';
+    } else if (quality === '1080') {
+      formatSpec = 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/best';
+    } else if (quality === '720') {
+      formatSpec = 'bestvideo[height<=720]+bestaudio/best[height<=720]/best';
+    } else {
+      formatSpec = 'bestvideo[height<=480]+bestaudio/best[height<=480]/best';
+    }
+    args.push('-f', formatSpec, '--merge-output-format', format);
+  }
+
+  args.push(
+    '-o', outputTemplate,
+    '--no-playlist',
+    '--no-warnings',
+    '--no-check-certificates',
+    '--newline',
+    '--progress',
+    '--geo-bypass',
+    '--socket-timeout', '30',
+    '--retries', '5',
+    '--fragment-retries', '5',
+  );
+
+  const proxy = getProxySetting();
+  if (proxy) args.push('--proxy', proxy);
+  if (ffmpegPath) args.push('--ffmpeg-location', path.dirname(ffmpegPath));
+
+  return new Promise((resolve, reject) => {
+    let lastOutputPath = '';
+    let hasResolved = false;
+    let allOutput = '';
+    const IDLE_TIMEOUT_MS = 90000;
+    let idleTimer = null;
+
+    function resetIdleTimer() {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        if (!hasResolved) {
+          hasResolved = true;
+          try { proc.kill('SIGTERM'); } catch {}
+          reject(new Error('Native yt-dlp download timed out'));
+        }
+      }, IDLE_TIMEOUT_MS);
+    }
+
+    const proc = spawn(YTDLP_BIN, args, {
+      windowsHide: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    resetIdleTimer();
+
+    function parseLine(line) {
+      if (!line) return;
+      resetIdleTimer();
+
+      const destMatch = line.match(/Destination:\s*(.+)/);
+      if (destMatch) lastOutputPath = destMatch[1].trim();
+
+      const mergeMatch = line.match(/Merging formats into "(.+?)"/);
+      if (mergeMatch) lastOutputPath = mergeMatch[1].trim();
+
+      const progressMatch = line.match(
+        /\[download\]\s+([\d.]+)%\s+of\s+~?\s*([\d.]+\S+)\s+at\s+([\d.]+\S+)\s+ETA\s+(\S+)/
+      );
+      if (progressMatch && onProgress) {
+        onProgress({
+          percent: parseFloat(progressMatch[1]) || 0,
+          totalSize: progressMatch[2] || '',
+          currentSpeed: progressMatch[3] || '',
+          eta: progressMatch[4] || '',
+        });
+        return;
+      }
+
+      const simpleProgress = line.match(/\[download\]\s+([\d.]+)%/);
+      if (simpleProgress && onProgress) {
+        onProgress({ percent: parseFloat(simpleProgress[1]) || 0, totalSize: '', currentSpeed: '', eta: '' });
+      }
+    }
+
+    let stdoutBuf = '';
+    proc.stdout.on('data', (chunk) => {
+      const text = chunk.toString();
+      allOutput += text;
+      stdoutBuf += text;
+      const lines = stdoutBuf.split(/\r?\n/);
+      stdoutBuf = lines.pop();
+      lines.forEach(parseLine);
+    });
+
+    let stderrBuf = '';
+    proc.stderr.on('data', (chunk) => {
+      const text = chunk.toString();
+      allOutput += text;
+      stderrBuf += text;
+      const lines = stderrBuf.split(/\r?\n/);
+      stderrBuf = lines.pop();
+      lines.forEach(parseLine);
+    });
+
+    proc.on('error', (err) => {
+      if (idleTimer) clearTimeout(idleTimer);
+      if (!hasResolved) { hasResolved = true; reject(err); }
+    });
+
+    proc.on('close', (code) => {
+      if (idleTimer) clearTimeout(idleTimer);
+      if (stdoutBuf) parseLine(stdoutBuf);
+      if (stderrBuf) parseLine(stderrBuf);
+
+      if (hasResolved) return;
+      hasResolved = true;
+
+      if (code !== 0 && code !== null) {
+        const errLine = allOutput.split('\n').find(l => /ERROR/i.test(l));
+        return reject(new Error(errLine || `yt-dlp exited with code ${code}`));
+      }
+
+      if (onProgress) onProgress({ percent: 100, totalSize: '', currentSpeed: '', eta: '' });
+
+      if (lastOutputPath && fs.existsSync(lastOutputPath)) {
+        resolve({ success: true, outputPath: lastOutputPath });
+      } else {
+        const recent = findRecentFile(outputDir);
+        resolve({ success: true, outputPath: recent || outputDir });
+      }
+    });
+  });
 }
 
 module.exports = {

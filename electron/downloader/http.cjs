@@ -58,7 +58,7 @@ function downloadToFile(url, destPath, onProgress, customHeaders) {
       const reqOpts = {
         hostname: parsedUrl.hostname,
         path: parsedUrl.pathname + parsedUrl.search,
-        timeout: 20000,
+        timeout: 30000,
         rejectUnauthorized: false,
         headers: customHeaders || {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
@@ -82,13 +82,13 @@ function downloadToFile(url, destPath, onProgress, customHeaders) {
         const file = fs.createWriteStream(destPath);
         const startTime = Date.now();
 
-        // Stall detection: if no data for 15s during download, abort
+        // Stall detection: if no data for 30s during download, abort
         const stallTimer = setInterval(() => {
-          if (downloaded === 0 && Date.now() - startTime > 15000) {
+          if (downloaded === 0 && Date.now() - startTime > 30000) {
             clearInterval(stallTimer);
             req.destroy();
             file.destroy();
-            fail(new Error('Download stalled — no data received'));
+            fail(new Error('Download stalled -- no data received'));
           }
         }, 5000);
 

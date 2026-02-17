@@ -143,8 +143,8 @@ function downloadGenericMedia(job, onProgress) {
       '--no-check-formats',
       '--newline',
       '--progress',
-      '--force-ipv4',
-      '--socket-timeout', '15',
+      '--geo-bypass',
+      '--socket-timeout', '30',
     );
 
     const proxy = getProxySetting();
@@ -154,7 +154,7 @@ function downloadGenericMedia(job, onProgress) {
     let lastOutputPath = '';
     let hasResolved = false;
     let allOutput = '';
-    const IDLE_TIMEOUT_MS = 30000;
+    const IDLE_TIMEOUT_MS = 60000;
     let idleTimer = null;
 
     function resetIdleTimer() {
@@ -163,7 +163,7 @@ function downloadGenericMedia(job, onProgress) {
         if (!hasResolved) {
           hasResolved = true;
           try { proc.kill('SIGTERM'); } catch {}
-          reject(new Error('Download stalled — no output for 30 seconds. Check your network connection.'));
+          reject(new Error('Download stalled - no output for 30 seconds. Check your network connection.'));
         }
       }, IDLE_TIMEOUT_MS);
     }
