@@ -11,13 +11,14 @@ Convert, compress, and download videos, audio, images, and PDFs — entirely off
 ![Platform](https://img.shields.io/badge/platform-Windows-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-</div>
-
 ## Preview
 
 <div align="center">
   <img src="public/konvrt_preview.gif" alt="Konvrt Preview" width="780" />
 </div>
+
+</div>
+
 
 ## Features
 
