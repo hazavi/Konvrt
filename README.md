@@ -1,9 +1,17 @@
+<div align="center">
+
+<img src="public/konvrt_ico.ico" alt="Konvrt" width="64" />
+
 # Konvrt
 
-A multi media converter, compressor, and downloader built with Electron, FFmpeg, Sharp, and MuPDF. Convert, compress, and download videos, audio, images, and PDFs — entirely offline on your machine.
+A multimedia converter, compressor, and downloader built with Electron, FFmpeg, Sharp, and MuPDF.  
+Convert, compress, and download videos, audio, images, and PDFs — entirely offline on your machine.
 
-![Version](https://img.shields.io/badge/version-1.0.0-7c6cf0)
-![License](https://img.shields.io/badge/license-MIT-blue)
+![Electron](https://img.shields.io/badge/Electron-33-47848F?logo=electron&logoColor=white)
+![Platform](https://img.shields.io/badge/platform-Windows-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+</div>
 
 ## Features
 
