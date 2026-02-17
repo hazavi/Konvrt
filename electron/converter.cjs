@@ -121,11 +121,11 @@ function convertVideo(input, output, format, quality, onProgress, isCompress) {
 
     if (['mp4', 'mkv', 'webm', 'avi', 'mov', 'ts', '3gp', 'ogv', 'm4v', 'flv', 'wmv'].includes(format)) {
       if (isCompress) {
-        // Compress mode: preserve quality — CRF 18-28 range (lower = better quality)
+        // Compress mode: CRF 18-28 range (lower = better quality), fast presets for speed
         const crf = Math.round(28 - (quality / 100) * 10);
-        const preset = quality > 70 ? 'slow' : 'medium';
+        const preset = quality > 85 ? 'medium' : 'fast';
         if (format === 'webm' || format === 'ogv') {
-          command.videoCodec('libvpx-vp9').addOptions([`-crf`, `${crf}`, `-b:v`, `0`]);
+          command.videoCodec('libvpx-vp9').addOptions([`-crf`, `${crf}`, `-b:v`, `0`, `-cpu-used`, `4`]);
         } else {
           command.videoCodec('libx264').addOptions([`-crf`, `${crf}`, `-preset`, `${preset}`]);
         }
