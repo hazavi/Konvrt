@@ -13,6 +13,12 @@ Convert, compress, and download videos, audio, images, and PDFs — entirely off
 
 </div>
 
+## Preview
+
+<div align="center">
+  <img src="public/konvrt_preview.gif" alt="Konvrt Preview" width="780" />
+</div>
+
 ## Features
 
 ### Convert & Compress
