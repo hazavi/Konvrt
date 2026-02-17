@@ -19,7 +19,7 @@ A multi media converter, compressor, and downloader built with Electron, FFmpeg,
 
 ### Download
 
-- **YouTube** — Download video/audio via InnerTube API with yt-dlp fallback
+- **YouTube** — Download video/audio via yt-dlp
 - **TikTok & Other Platforms** — Generic yt-dlp support for 1000+ sites
 - **Format Selection** — Choose MP4 video or MP3/M4A audio
 - **Quality Options** — 1080p, 720p, 480p, best available
@@ -39,7 +39,7 @@ A multi media converter, compressor, and downloader built with Electron, FFmpeg,
 | Video/Audio | FFmpeg via fluent-ffmpeg                  |
 | Images      | Sharp, Jimp (BMP fallback)                |
 | PDF         | MuPDF (PDF → image), PDFKit (image → PDF) |
-| Downloads   | InnerTube API, yt-dlp                     |
+| Downloads   | yt-dlp                                    |
 
 ## Project Structure
 
@@ -54,7 +54,7 @@ Konvrt/
 │       ├── index.cjs         # Unified download API (routes YouTube vs generic)
 │       ├── settings.cjs      # Paths, proxy config, yt-dlp binary location
 │       ├── http.cjs          # HTTP/HTTPS utilities, file download with progress
-│       ├── youtube.cjs       # InnerTube API, direct YouTube download
+│       ├── youtube.cjs       # YouTube-specific yt-dlp download
 │       └── ytdlp.cjs         # yt-dlp binary management, generic downloads
 ├── src/
 │   ├── layouts/

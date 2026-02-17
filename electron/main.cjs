@@ -3,7 +3,7 @@ const path = require('path');
 const http = require('http');
 const fs = require('fs');
 const { processFile } = require('./converter.cjs');
-const { isYtDlpInstalled, installYtDlp, getVideoInfo, downloadMedia, getProxySetting, setProxySetting } = require('./downloader/index.cjs');
+const { isDownloadReady, installDownloadTools, getVideoInfo, downloadMedia, getProxySetting, setProxySetting } = require('./downloader/index.cjs');
 
 let mainWindow;
 let prodServer;
@@ -182,12 +182,12 @@ ipcMain.handle('convert', async (event, job) => {
 // ── Download IPC Handlers ──────────────────────────────────────
 
 ipcMain.handle('ytdlp-check', async () => {
-  return isYtDlpInstalled();
+  return isDownloadReady();
 });
 
 ipcMain.handle('ytdlp-install', async () => {
   try {
-    await installYtDlp((progress) => {
+    await installDownloadTools((progress) => {
       mainWindow.webContents.send('ytdlp-install-progress', progress);
     });
     return { success: true };

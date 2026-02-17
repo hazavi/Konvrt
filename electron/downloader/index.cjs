@@ -4,7 +4,7 @@
  * Modules:
  *   settings.cjs  — proxy config, paths, yt-dlp binary location
  *   http.cjs      — HTTP GET/POST, file download with progress
- *   youtube.cjs   — InnerTube API, direct download, YouTube-specific logic
+ *   youtube.cjs   — YouTube-specific yt-dlp logic
  *   ytdlp.cjs     — yt-dlp binary management, generic platform downloads
  */
 const { YTDLP_BIN, getProxySetting, setProxySetting } = require('./settings.cjs');
@@ -13,7 +13,7 @@ const { getYouTubeInfo, downloadYouTube } = require('./youtube.cjs');
 const { getGenericVideoInfo, downloadGenericMedia } = require('./ytdlp.cjs');
 
 /**
- * Fetch video metadata. YouTube uses instant InnerTube API. Others use yt-dlp.
+ * Fetch video metadata via yt-dlp.
  */
 async function getVideoInfo(url) {
   if (url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -23,7 +23,7 @@ async function getVideoInfo(url) {
 }
 
 /**
- * Download video or audio. YouTube uses InnerTube-based download. Others use yt-dlp.
+ * Download video or audio. YouTube uses yt-dlp. Others use yt-dlp.
  */
 function downloadMedia(job, onProgress) {
   const { url } = job;
@@ -33,9 +33,31 @@ function downloadMedia(job, onProgress) {
   return downloadGenericMedia(job, onProgress);
 }
 
+/**
+ * Check if yt-dlp is installed and ready.
+ */
+function isDownloadReady() {
+  return isYtDlpInstalled();
+}
+
+/**
+ * Install yt-dlp download engine.
+ */
+async function installDownloadTools(onProgress) {
+  try {
+    if (onProgress) onProgress({ status: 'downloading', message: 'Installing yt-dlp...' });
+    await installYtDlp(onProgress);
+  } catch (err) {
+    throw new Error('Failed to install yt-dlp: ' + err.message);
+  }
+  return true;
+}
+
 module.exports = {
   isYtDlpInstalled,
+  isDownloadReady,
   installYtDlp,
+  installDownloadTools,
   getVideoInfo,
   downloadMedia,
   getProxySetting,

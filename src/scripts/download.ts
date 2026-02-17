@@ -28,7 +28,7 @@ export async function handleInstallYtDlp() {
   const status = document.getElementById("dl-install-status")!;
   btn.disabled = true;
   btn.innerHTML = '<span class="btn-spinner"></span> Installing...';
-  status.textContent = "Downloading yt-dlp binary...";
+  status.textContent = "Downloading download engines...";
 
   const result = await api.ytdlpInstall();
   if (result.success) {

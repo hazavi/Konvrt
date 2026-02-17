@@ -37,9 +37,12 @@ function setProxySetting(proxy) {
   saveSettings(settings);
 }
 
+const LUX_BIN = path.join(YTDLP_DIR, process.platform === 'win32' ? 'lux.exe' : 'lux');
+
 module.exports = {
   YTDLP_DIR,
   YTDLP_BIN,
+  LUX_BIN,
   SETTINGS_PATH,
   ensureDir,
   loadSettings,
