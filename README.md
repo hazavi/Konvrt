@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="public/konvrt_ico.ico" alt="Konvrt" width="64" />
+<img src="public/konvrt_ico.ico" alt="Konvrt" width="72" />
 
 # Konvrt
 
