@@ -1610,7 +1610,7 @@ import DownloadView from "../components/DownloadView.astro";
 
   function truncatePath(p: string): string {
     if (p.length <= 30) return p;
-    return "â€¦" + p.slice(-28);
+    return "…" + p.slice(-28);
   }
 
   function formatSize(bytes: number): string {
@@ -1730,7 +1730,7 @@ import DownloadView from "../components/DownloadView.astro";
               <span class="file-type-badge ${f.type}">${f.type}</span>
               ${doneFormatHtml}
             </div>
-            <span class="file-meta">${f.ext.toUpperCase()}${f.size ? " Â· " + formatSize(f.size) : ""}${f.status === "done" ? " Â· Completed" : ""}</span>
+            <span class="file-meta">${f.ext.toUpperCase()}${f.size ? " · " + formatSize(f.size) : ""}${f.status === "done" ? " · Completed" : ""}</span>
           </div>
           <div class="file-right">
             ${statusHtml}
@@ -1956,7 +1956,7 @@ import DownloadView from "../components/DownloadView.astro";
     qualityLabel.textContent = `${quality}%`;
     outputLabel.textContent = outputDir
       ? truncatePath(outputDir)
-      : "Choose folderâ€¦";
+      : "Choose folder";
 
     const allDone = files.every(
       (f) => f.status === "done" || f.status === "error",
@@ -1972,7 +1972,7 @@ import DownloadView from "../components/DownloadView.astro";
         : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/></svg>';
 
     if (isConverting) {
-      convertBtn.innerHTML = `<span class="btn-spinner"></span> Convertingâ€¦`;
+      convertBtn.innerHTML = `<span class="btn-spinner"></span> Converting`;
       convertBtn.classList.add("converting");
       convertBtn.classList.remove("done");
     } else if (allDone && files.length > 0) {
