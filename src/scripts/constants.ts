@@ -36,7 +36,7 @@ export const FORMAT_OPTIONS: Record<string, string[]> = {
   ],
   image: [
     "jpg", "png", "webp", "avif", "gif", "bmp", "tiff", "heif",
-    "ico", "jxl",
+    "ico", "jxl", "svg",
   ],
   pdf: ["png", "jpg", "webp", "avif", "tiff", "gif", "bmp"],
 };

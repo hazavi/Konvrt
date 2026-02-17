@@ -2,6 +2,7 @@
 
 A multi media converter, compressor, and downloader built with Electron, FFmpeg, Sharp, and MuPDF. Convert, compress, and download videos, audio, images, and PDFs — entirely offline on your machine.
 
+![Version](https://img.shields.io/badge/version-1.0.0-7c6cf0)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## Features
@@ -28,7 +29,7 @@ A multi media converter, compressor, and downloader built with Electron, FFmpeg,
 ### General
 
 - **100% Local** — All processing on your machine. No uploads, no servers.
-- **Cross-Platform** — Windows, macOS, Linux
+- **Cross-Platform** — Windows. (macOS, Linux - coming soon...)
 
 ## Tech Stack
 
@@ -88,7 +89,7 @@ Konvrt/
 ### Install
 
 ```sh
-git clone https://github.com/your-username/Konvrt.git
+git clone https://github.com/hazavi/Konvrt.git
 cd Konvrt
 npm install
 ```
@@ -129,11 +130,6 @@ docker run -p 4321:4321 konvrt
 
 > **Note:** The Docker image serves the Astro static frontend only. Electron desktop features (file conversion, downloads) require the native desktop build.
 
-## CI / CD
-
-The repository includes a GitHub Actions workflow (`.github/workflows/release.yml`) that automatically builds installers for **Windows** (`.exe`), **macOS** (`.dmg`), and **Linux** (`.AppImage`) when a GitHub Release is created. Artifacts are uploaded to the release.
-
-To trigger a build manually, use the **Run workflow** button on the Actions tab.
 
 ## Commands
 
@@ -145,6 +141,20 @@ To trigger a build manually, use the **Run workflow** button on the Actions tab.
 | `npm run dev:electron` | Launch Electron (connect to running Astro) |
 | `npm run build`        | Build frontend and package desktop app     |
 | `npm run preview`      | Preview the Astro build locally            |
+
+
+
+---
+
+## Roadmap
+
+Planned features and improvements for future releases:
+
+- [ ] **Download Manager** — Queue, pause/resume, show in folder and manage multiple downloads at once
+- [ ] **Linux & macOS Builds** — Tested and signed native packages (`.AppImage`, `.deb`, `.dmg`)
+- [ ] **More Tools** — Trim video, extract audio, crop/resize images, merge PDFs, watermark
+- [ ] **Drag & Drop Reorder** — Reorder files in the conversion queue
+- [ ] **Auto-Update** — In-app update notifications and one-click install
 
 ## License
 

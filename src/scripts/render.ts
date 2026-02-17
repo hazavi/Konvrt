@@ -38,7 +38,8 @@ export function renderViews() {
   downloadView.style.display = "none";
 
   if (currentTab === "tools") {
-    toolsPanel.style.display = "block";
+    toolsPanel.style.display = "flex";
+    toolsPanel.style.flexDirection = "column";
   } else if (currentTab === "download") {
     downloadView.style.display = "flex";
   } else {
@@ -78,6 +79,74 @@ export function renderFileList() {
     return;
   }
 
+  // Check if we can do a fast incremental update (same file set, only status/progress changed)
+  const existingCards = container.querySelectorAll(".file-card[data-id]");
+  const existingIds = new Set<string>();
+  existingCards.forEach((c) => existingIds.add((c as HTMLElement).dataset.id || ""));
+  const canPatch = existingIds.size === files.length && files.every((f) => existingIds.has(f.id));
+
+  if (canPatch) {
+    // Fast path: only update status, progress, and meta — don't touch thumbnails
+    files.forEach((f) => {
+      const card = container.querySelector(`.file-card[data-id="${f.id}"]`) as HTMLElement;
+      if (!card) return;
+
+      // Update card status class
+      card.className = `file-card ${f.status}`;
+
+      // Update file-right (status + remove button)
+      const fileRight = card.querySelector(".file-right") as HTMLElement;
+      if (fileRight) {
+        let statusHtml = "";
+        if (f.status === "converting") {
+          statusHtml = `
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${f.progress}%"></div></div>
+          <span class="progress-pct">${f.progress}%</span>`;
+        } else if (f.status === "done") {
+          statusHtml = `<span class="status-icon done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>`;
+        } else if (f.status === "error") {
+          statusHtml = `<span class="status-icon error" title="${escapeHtml(f.error || "")}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`;
+        }
+        fileRight.innerHTML = `${statusHtml}<button class="remove-btn" data-id="${f.id}" ${isConverting ? "disabled" : ""} title="Remove">X</button>`;
+      }
+
+      // Update done format badge and meta text
+      const nameRow = card.querySelector(".file-name-row") as HTMLElement;
+      if (nameRow) {
+        const existingDoneFmt = nameRow.querySelector(".done-format");
+        if (f.status === "done" && f.outputPath) {
+          const fmtText = f.outputPath.split(".").pop()?.toUpperCase() || "";
+          if (existingDoneFmt) {
+            existingDoneFmt.textContent = fmtText;
+          } else {
+            nameRow.insertAdjacentHTML("beforeend", `<span class="done-format">${fmtText}</span>`);
+          }
+        } else if (existingDoneFmt) {
+          existingDoneFmt.remove();
+        }
+      }
+
+      const meta = card.querySelector(".file-meta");
+      if (meta) {
+        meta.textContent = `${f.ext.toUpperCase()}${f.size ? " - " + formatSize(f.size) : ""}${f.status === "done" ? " - Completed" : ""}`;
+      }
+    });
+
+    // Re-bind remove buttons
+    container.querySelectorAll(".remove-btn").forEach((btn) => {
+      const newBtn = btn.cloneNode(true) as HTMLElement;
+      btn.parentNode!.replaceChild(newBtn, btn);
+      newBtn.addEventListener("click", () => {
+        const idx = files.findIndex((f) => f.id === newBtn.dataset.id);
+        if (idx !== -1) files.splice(idx, 1);
+        if (onRemoveFile) onRemoveFile();
+        render();
+      });
+    });
+    return;
+  }
+
+  // Full render path: file list changed (files added/removed)
   container.innerHTML = files
     .map((f) => {
       const previewUrl = getPreviewUrl(f.path);

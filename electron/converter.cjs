@@ -295,7 +295,45 @@ async function convertImage(input, output, format, quality, onProgress, isCompre
     return convertImageToIco(input, output, onProgress);
   }
 
+  if (fmt === 'svg') {
+    return convertImageToSvg(input, output, onProgress);
+  }
+
   throw new Error(`Unsupported image output format: ${format}`);
+}
+
+// ── Image → SVG conversion (raster embed) ─────────────────────
+
+async function convertImageToSvg(input, output, onProgress) {
+  try {
+    onProgress(10);
+
+    // First flatten alpha (screenshots may have transparency) and ensure 8-bit sRGB
+    const pipeline = sharp(input).flatten({ background: { r: 255, g: 255, b: 255 } }).toColorspace('srgb');
+    const metadata = await sharp(input).metadata();
+    const width = metadata.width || 800;
+    const height = metadata.height || 600;
+    onProgress(30);
+
+    // Convert to PNG buffer for embedding
+    const pngBuffer = await pipeline.png({ compressionLevel: 6 }).toBuffer();
+    onProgress(60);
+
+    const base64 = pngBuffer.toString('base64');
+    const svg = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
+      `  <image width="${width}" height="${height}" href="data:image/png;base64,${base64}"/>`,
+      '</svg>',
+    ].join('\n');
+
+    onProgress(80);
+    fs.writeFileSync(output, svg, 'utf8');
+    onProgress(100);
+    return output;
+  } catch (err) {
+    throw new Error('SVG conversion failed: ' + (err.message || err));
+  }
 }
 
 // ── Image → ICO conversion ────────────────────────────────────

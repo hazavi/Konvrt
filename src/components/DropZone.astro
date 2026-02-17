@@ -73,7 +73,8 @@
     border-radius: var(--radius);
     background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    min-height: 240px;
+    min-height: 0;
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -98,6 +99,7 @@
   }
   #dropzone.has-files {
     min-height: 0;
+    flex: 0 0 auto;
     padding: 0;
     border: none;
     background: transparent;

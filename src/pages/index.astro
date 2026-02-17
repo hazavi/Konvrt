@@ -41,13 +41,16 @@ import DownloadView from "../components/DownloadView.astro";
     flex-direction: column;
     padding: 14px 18px 10px;
     gap: 10px;
-    overflow-y: auto;
+    overflow: hidden;
+    min-height: 0;
   }
   #view-convert {
     display: flex;
     flex-direction: column;
     gap: 10px;
     flex: 1;
+    overflow-y: auto;
+    min-height: 0;
   }
   /* Toast container */
   .toast-container {
