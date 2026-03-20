@@ -1,6 +1,6 @@
 {
   "name": "konvrt",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Media converter & compression — video, audio, and image processing locally on your machine.",
   "type": "module",
   "main": "electron/main.cjs",
