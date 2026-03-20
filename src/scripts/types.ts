@@ -4,7 +4,7 @@ export interface FileEntry {
   path: string;
   name: string;
   ext: string;
-  type: "video" | "audio" | "image" | "pdf";
+  type: "video" | "audio" | "image" | "pdf" | "document";
   size: number;
   progress: number;
   status: "pending" | "converting" | "done" | "error";

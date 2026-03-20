@@ -158,7 +158,9 @@ export function renderFileList() {
       } else if (f.type === "video") {
         thumbHtml = `<div class="file-thumb" data-preview="${escapeHtml(f.path)}" data-type="${f.type}"><video src="${previewUrl}" muted preload="metadata"></video>${playIcon}</div>`;
       } else if (f.type === "pdf") {
-        thumbHtml = `<div class="file-thumb"><span class="thumb-icon" style="font-size:13px;font-weight:800;color:var(--file-color);">FILE</span></div>`;
+        thumbHtml = `<div class="file-thumb"><span class="thumb-icon" style="font-size:13px;font-weight:800;color:var(--pdf-color);">PDF</span></div>`;
+      } else if (f.type === "document") {
+        thumbHtml = `<div class="file-thumb"><span class="thumb-icon" style="font-size:11px;font-weight:800;color:var(--doc-color);">DOC</span></div>`;
       }
 
       let statusHtml = "";
@@ -385,6 +387,7 @@ function renderToolGrid(containerId: string, tools: ToolEntry[], cat: string) {
         tool.type === "video" ? "video" :
         tool.type === "audio" ? "audio" :
         tool.type === "pdf" ? "pdf" :
+        tool.type === "document" ? "doc" :
         tool.cat === "gif" ? "gif" : "image";
 
       return `

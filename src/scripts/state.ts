@@ -6,7 +6,7 @@ export let outputDir = "";
 export let targetFormat = "";
 export let quality = 80;
 export let isConverting = false;
-export let selectedType: "video" | "audio" | "image" | "pdf" | null = null;
+export let selectedType: "video" | "audio" | "image" | "pdf" | "document" | null = null;
 export let currentTab: "convert" | "compress" | "tools" | "download" = "convert";
 export let conversionMode: "convert" | "compress" = "convert";
 

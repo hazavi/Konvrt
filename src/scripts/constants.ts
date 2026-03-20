@@ -18,6 +18,11 @@ export const IMAGE_EXTS = [
 
 export const PDF_EXTS = ["pdf"];
 
+export const DOCUMENT_EXTS = [
+  "txt", "md", "markdown", "html", "htm", "csv", "json", "xml",
+  "yaml", "yml", "tsv", "log", "rtf",
+];
+
 // Audio formats available for video-to-audio extraction
 export const AUDIO_EXTRACT_FMTS = [
   "mp3", "m4a", "aac", "wav", "flac", "ogg", "opus", "wma", "aiff", "ac3",
@@ -39,4 +44,5 @@ export const FORMAT_OPTIONS: Record<string, string[]> = {
     "ico", "jxl", "svg",
   ],
   pdf: ["png", "jpg", "webp", "avif", "tiff", "gif", "bmp"],
+  document: ["html", "txt", "md", "csv", "json", "pdf"],
 };

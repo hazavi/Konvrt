@@ -1,4 +1,4 @@
-import { VIDEO_EXTS, AUDIO_EXTS, IMAGE_EXTS, PDF_EXTS } from "./constants";
+import { VIDEO_EXTS, AUDIO_EXTS, IMAGE_EXTS, PDF_EXTS, DOCUMENT_EXTS } from "./constants";
 import type { FileEntry } from "./types";
 
 export function detectType(name: string): FileEntry["type"] | null {
@@ -7,6 +7,7 @@ export function detectType(name: string): FileEntry["type"] | null {
   if (AUDIO_EXTS.includes(ext)) return "audio";
   if (IMAGE_EXTS.includes(ext)) return "image";
   if (PDF_EXTS.includes(ext)) return "pdf";
+  if (DOCUMENT_EXTS.includes(ext)) return "document";
   return null;
 }
 

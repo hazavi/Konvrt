@@ -162,6 +162,28 @@ export const CONVERT_TOOLS: ToolEntry[] = [
   { label: "WMV to GIF", desc: "WMV to GIF", cat: "gif", icon: "GIF", type: "video", format: "gif" },
   { label: "GIF to MP4", desc: "GIF to video", cat: "gif", icon: "MP4", type: "image", format: "mp4" },
   { label: "GIF to WEBM", desc: "GIF to WebM", cat: "gif", icon: "WBM", type: "image", format: "webm" },
+
+  // Document
+  { label: "Document Converter", desc: "Any document format", cat: "doc", icon: "DOC", type: "document" },
+  { label: "MD to HTML", desc: "Markdown to HTML", cat: "doc", icon: "MD", type: "document", format: "html" },
+  { label: "TXT to HTML", desc: "Text to HTML", cat: "doc", icon: "TXT", type: "document", format: "html" },
+  { label: "CSV to HTML", desc: "CSV to HTML table", cat: "doc", icon: "CSV", type: "document", format: "html" },
+  { label: "JSON to HTML", desc: "JSON to HTML view", cat: "doc", icon: "JSN", type: "document", format: "html" },
+  { label: "XML to HTML", desc: "XML to HTML view", cat: "doc", icon: "XML", type: "document", format: "html" },
+  { label: "YAML to HTML", desc: "YAML to HTML view", cat: "doc", icon: "YML", type: "document", format: "html" },
+  { label: "HTML to TXT", desc: "HTML to plain text", cat: "doc", icon: "HTM", type: "document", format: "txt" },
+  { label: "HTML to MD", desc: "HTML to Markdown", cat: "doc", icon: "HTM", type: "document", format: "md" },
+  { label: "CSV to JSON", desc: "CSV to JSON data", cat: "doc", icon: "CSV", type: "document", format: "json" },
+  { label: "JSON to CSV", desc: "JSON array to CSV", cat: "doc", icon: "JSN", type: "document", format: "csv" },
+  { label: "TSV to JSON", desc: "TSV to JSON data", cat: "doc", icon: "TSV", type: "document", format: "json" },
+  { label: "TSV to HTML", desc: "TSV to HTML table", cat: "doc", icon: "TSV", type: "document", format: "html" },
+  { label: "RTF to HTML", desc: "RTF to HTML", cat: "doc", icon: "RTF", type: "document", format: "html" },
+  { label: "RTF to TXT", desc: "RTF to plain text", cat: "doc", icon: "RTF", type: "document", format: "txt" },
+  { label: "Log to HTML", desc: "Log file to HTML", cat: "doc", icon: "LOG", type: "document", format: "html" },
+  { label: "MD to PDF", desc: "Markdown to PDF", cat: "doc", icon: "MD", type: "document", format: "pdf" },
+  { label: "TXT to PDF", desc: "Text to PDF", cat: "doc", icon: "TXT", type: "document", format: "pdf" },
+  { label: "CSV to PDF", desc: "CSV to PDF", cat: "doc", icon: "CSV", type: "document", format: "pdf" },
+  { label: "HTML to PDF", desc: "HTML to PDF", cat: "doc", icon: "HTM", type: "document", format: "pdf" },
 ];
 
 // Compressor tool entries

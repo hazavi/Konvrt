@@ -72,6 +72,9 @@
         <button class="cat-tab" data-cat="pdf">
           <span class="cat-dot pdf"></span>PDF
         </button>
+        <button class="cat-tab" data-cat="doc">
+          <span class="cat-dot doc"></span>Document
+        </button>
       </div>
     </div>
     <div class="tools-grid" id="tools-convert-grid"></div>
@@ -220,6 +223,9 @@
   .cat-dot.pdf {
     background: var(--pdf-color);
   }
+  .cat-dot.doc {
+    background: var(--doc-color);
+  }
 
   .tools-grid {
     display: grid;
@@ -271,6 +277,9 @@
   :global(.tool-card[data-tool-type="pdf"]::before) {
     background: linear-gradient(135deg, var(--pdf-bg) 0%, transparent 50%);
   }
+  :global(.tool-card[data-tool-type="document"]::before) {
+    background: linear-gradient(135deg, var(--doc-bg) 0%, transparent 50%);
+  }
 
   :global(.tool-card .tool-icon) {
     width: 34px;
@@ -305,6 +314,10 @@
   :global(.tool-card .tool-icon.pdf) {
     background: var(--pdf-bg);
     color: var(--pdf-color);
+  }
+  :global(.tool-card .tool-icon.doc) {
+    background: var(--doc-bg);
+    color: var(--doc-color);
   }
 
   :global(.tool-card .tool-text) {
