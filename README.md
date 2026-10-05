@@ -11,7 +11,8 @@ Everything runs on your computer.
 ![Platform](https://img.shields.io/badge/platform-Windows-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-<img src="public/konvrt_preview.gif" alt="Konvrt Preview" width="780" />
+<img width="1100" height="750" alt="Skærmbillede 2026-10-05 143626" src="https://github.com/user-attachments/assets/8b569b8f-5393-43ef-b86c-8745d122c6c8" />
+
 
 </div>
 
