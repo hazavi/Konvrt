@@ -7,6 +7,10 @@ interface Outcome {
 
 /** Bridge exposed by electron/preload.cjs. */
 export interface KonvrtApi {
+  windowMinimize(): Promise<void>;
+  windowToggleMaximize(): Promise<void>;
+  windowClose(): Promise<void>;
+  onWindowMaximized(cb: (maximized: boolean) => void): void;
   selectFiles(): Promise<string[]>;
   selectOutputDir(): Promise<string | null>;
   convert(job: {

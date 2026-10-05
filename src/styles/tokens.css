@@ -1,53 +1,55 @@
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* shadcn/ui semantic palette (dark) */
-  --background: #06060b;
-  --foreground: #eef0f6;
-  --card: #0e0e16;
-  --popover: #1a1a28;
-  --primary: #7c6cf0;
-  --primary-hover: #8d7ff5;
-  --primary-light: #a494ff;
-  --primary-foreground: #fff;
-  --secondary: #141420;
-  --secondary-foreground: #a2a2c0;
-  --muted: #141420;
-  --muted-foreground: #7a7a9a;
-  --accent: #1c1c2e;
-  --destructive: #f87171;
-  --success: #34d399;
-  --success-strong: #059669;
+  /* Neobrutalism palette (shadcn semantic names, as used by 21st.dev) */
+  --background: #fff4d6;
+  --foreground: #000;
+  --card: #fff;
+  --popover: #fff;
+  --primary: #a78bfa;
+  --primary-hover: #b9a2fc;
+  --primary-light: #4c2bd9;
+  --primary-foreground: #000;
+  --secondary: #fde68a;
+  --secondary-foreground: #000;
+  --muted: #fff9e8;
+  --muted-foreground: #3d3d3d;
+  --accent: #ffd6e8;
+  --destructive: #ff5a5a;
+  --success: #4ade80;
+  --success-strong: #22c55e;
   --warning: #fbbf24;
-  --border: #1e1e30;
-  --input: #2e2e48;
-  --ring: var(--primary);
+  --border: #000;
+  --input: #000;
+  --ring: #000;
 
-  /* Tinted surfaces derived from the palette */
-  --primary-glow: color-mix(in srgb, var(--primary) 10%, transparent);
-  --primary-glow-strong: color-mix(in srgb, var(--primary) 25%, transparent);
-  --success-bg: color-mix(in srgb, var(--success) 8%, transparent);
-  --destructive-bg: color-mix(in srgb, var(--destructive) 8%, transparent);
+  /* Flat tints; neobrutalism has no glows */
+  --primary-glow: color-mix(in srgb, var(--primary) 35%, white);
+  --primary-glow-strong: var(--primary);
+  --success-bg: color-mix(in srgb, var(--success) 35%, white);
+  --destructive-bg: color-mix(in srgb, var(--destructive) 30%, white);
 
   /* File kinds */
   --video: #818cf8;
   --audio: #fb923c;
   --image: #2dd4bf;
   --gif: #f472b6;
-  --pdf: #ef4444;
+  --pdf: #ff5a5a;
   --doc: #38bdf8;
 
-  --radius: 0.75rem;
+  --bw: 2px;
+  --radius: 0.5rem;
   --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 4px);
-  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: 6px;
+  --radius-sm: 4px;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+  /* Hard offset shadows */
+  --shadow-sm: 2px 2px 0 0 #000;
+  --shadow-md: 4px 4px 0 0 #000;
+  --shadow-lg: 6px 6px 0 0 #000;
 
-  --transition: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: 0.1s ease-out;
 
-  --font-sans: "Inter Variable", system-ui, -apple-system, sans-serif;
+  --font-sans: "Space Grotesk Variable", "Inter Variable", system-ui, sans-serif;
   --font-mono: "SF Mono", "Fira Code", monospace;
 }

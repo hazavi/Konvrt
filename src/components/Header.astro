@@ -33,5 +33,17 @@ const tabs = [
   </div>
   <div class="header-right">
     <span class="badge badge-outline">v{pkg.version}</span>
+    <div class="window-controls" id="window-controls" hidden>
+      <button class="btn btn-icon btn-sm win-btn" id="win-min" aria-label="Minimize">
+        <Icon name="minimize" size={14} stroke={3} />
+      </button>
+      <button class="btn btn-icon btn-sm win-btn" id="win-max" aria-label="Maximize">
+        <Icon name="maximize" size={13} stroke={3} class="ico-max" />
+        <Icon name="restore" size={14} stroke={3} class="ico-restore" />
+      </button>
+      <button class="btn btn-icon btn-sm win-btn win-close" id="win-close" aria-label="Close">
+        <Icon name="close" size={14} stroke={3} />
+      </button>
+    </div>
   </div>
 </header>

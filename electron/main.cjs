@@ -97,14 +97,12 @@ function createWindow() {
       webSecurity: false, // Allow loading local file:// previews
     },
     autoHideMenuBar: true,
-    backgroundColor: '#06060b',
-    titleBarStyle: 'hidden',
-    titleBarOverlay: {
-      color: '#0e0e16',
-      symbolColor: '#a2a2c0',
-      height: 36,
-    },
+    backgroundColor: '#fff4d6',
+    frame: false,
   });
+
+  mainWindow.on('maximize', () => mainWindow.webContents.send('window-maximized', true));
+  mainWindow.on('unmaximize', () => mainWindow.webContents.send('window-maximized', false));
 
   if (isDev) {
     console.log('[Konvrt] Waiting for Astro dev server...');
@@ -141,6 +139,14 @@ app.on('activate', () => {
 });
 
 // ── IPC Handlers ──────────────────────────────────────────────
+
+ipcMain.handle('window-minimize', () => mainWindow?.minimize());
+ipcMain.handle('window-toggle-maximize', () => {
+  if (!mainWindow) return;
+  if (mainWindow.isMaximized()) mainWindow.unmaximize();
+  else mainWindow.maximize();
+});
+ipcMain.handle('window-close', () => mainWindow?.close());
 
 ipcMain.handle('select-files', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {

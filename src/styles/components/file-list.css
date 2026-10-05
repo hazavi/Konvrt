@@ -1,7 +1,7 @@
 #file-list {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 8px;
 }
 
 .file-card {
@@ -10,28 +10,27 @@
   gap: 12px;
   padding: 8px 12px;
   background: var(--card);
-  border: 1px solid var(--border);
+  border: var(--bw) solid var(--border);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   cursor: default;
   transition: all var(--transition);
   animation: slide-up 0.25s ease-out;
 }
 .file-card:hover {
-  background: var(--accent);
-  border-color: var(--input);
+  background: var(--muted);
+  box-shadow: var(--shadow-md);
+  transform: translate(-1px, -1px);
 }
 .file-card.done {
-  background: linear-gradient(135deg, var(--success-bg), transparent 60%);
-  border-color: color-mix(in srgb, var(--success) 20%, transparent);
+  background: var(--success-bg);
 }
 .file-card.error {
-  background: linear-gradient(135deg, var(--destructive-bg), transparent 60%);
-  border-color: color-mix(in srgb, var(--destructive) 20%, transparent);
+  background: var(--destructive-bg);
 }
 .file-card.converting {
-  background: linear-gradient(135deg, var(--primary-glow), transparent 60%);
-  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
-  animation: progress-glow 2s ease-in-out infinite;
+  background: var(--primary-glow);
+  animation: progress-glow 1s ease-in-out infinite;
 }
 
 /* Thumbnail */
@@ -43,14 +42,14 @@
   height: 44px;
   flex-shrink: 0;
   overflow: hidden;
-  background: var(--secondary);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  background: var(--tone, var(--secondary));
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: border-color var(--transition);
+  transition: transform var(--transition);
 }
 .file-thumb:hover {
-  border-color: var(--primary);
+  transform: rotate(-3deg);
 }
 .file-thumb img,
 .file-thumb video {
@@ -59,20 +58,18 @@
   object-fit: cover;
 }
 .thumb-label {
-  color: var(--tone);
+  color: #000;
   font-size: 11px;
   font-weight: 800;
-  opacity: 0.6;
 }
 .play-overlay {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.6);
   color: #fff;
   opacity: 0;
-  backdrop-filter: blur(1px);
   transition: opacity var(--transition);
 }
 .file-thumb:hover .play-overlay {
@@ -93,11 +90,12 @@
   gap: 8px;
 }
 .file-name {
-  font-size: 12.5px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 700;
 }
 .file-meta {
-  font-size: 10.5px;
+  font-size: 11px;
+  font-weight: 500;
   color: var(--muted-foreground);
 }
 .done-format {
@@ -128,10 +126,10 @@
   place-items: center;
   width: 22px;
   height: 22px;
-  background: color-mix(in srgb, var(--tone) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--tone) 20%, transparent);
-  border-radius: 50%;
-  color: var(--tone);
+  background: var(--tone);
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius-sm);
+  color: #000;
   animation: success-pop 0.35s ease-out;
 }
 

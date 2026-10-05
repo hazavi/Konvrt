@@ -126,7 +126,17 @@ function initTools() {
   });
 }
 
+function initWindowControls() {
+  if (!api) return;
+  $("window-controls").hidden = false;
+  $("win-min").addEventListener("click", () => api!.windowMinimize());
+  $("win-max").addEventListener("click", () => api!.windowToggleMaximize());
+  $("win-close").addEventListener("click", () => api!.windowClose());
+  api.onWindowMaximized((maximized) => $("win-max").classList.toggle("is-maximized", maximized));
+}
+
 export function init() {
+  initWindowControls();
   initNavigation();
   initDropZone();
   initConvertBar();

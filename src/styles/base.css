@@ -29,21 +29,22 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid var(--ring);
+  outline: 3px solid var(--ring);
   outline-offset: 2px;
 }
 
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 12px;
+  height: 12px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--muted);
+  border-left: var(--bw) solid var(--border);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
+  background: var(--primary);
+  border: var(--bw) solid var(--border);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--input);
+  background: var(--primary-hover);
 }

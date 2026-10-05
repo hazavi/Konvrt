@@ -9,8 +9,7 @@
 .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.7);
 }
 .modal-content {
   position: relative;
@@ -26,8 +25,7 @@
 
 .modal-close,
 .modal-nav {
-  background: color-mix(in srgb, var(--card) 80%, transparent);
-  backdrop-filter: blur(8px);
+  background: var(--card);
 }
 .modal-close {
   position: absolute;
@@ -43,14 +41,16 @@
   z-index: 3;
   width: 40px;
   height: 40px;
-  opacity: 0.6;
+  opacity: 1;
   transform: translateY(-50%);
 }
 .modal-nav:hover:not(:disabled) {
-  background: var(--card);
-  border-color: var(--primary);
+  background: var(--primary);
   color: var(--foreground);
-  opacity: 1;
+  transform: translateY(-50%) translate(-1px, -1px);
+}
+.modal-nav:active:not(:disabled) {
+  transform: translateY(-50%) translate(2px, 2px);
 }
 .modal-nav:disabled {
   opacity: 0.15;
@@ -67,6 +67,7 @@
 #preview-body video {
   max-width: 78vw;
   max-height: 70vh;
+  border: 3px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   outline: none;
@@ -80,21 +81,21 @@
   justify-content: center;
   gap: 8px;
   padding: 6px 14px;
-  background: color-mix(in srgb, var(--card) 70%, transparent);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  backdrop-filter: blur(8px);
-  color: var(--secondary-foreground);
+  background: var(--secondary);
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  color: var(--foreground);
   font-size: 11.5px;
   text-align: center;
 }
 .preview-name {
   color: var(--foreground);
-  font-weight: 600;
+  font-weight: 800;
 }
 .preview-size,
 .preview-dims {
-  color: var(--muted-foreground);
+  color: var(--foreground);
   font-variant-numeric: tabular-nums;
 }
 .preview-counter {

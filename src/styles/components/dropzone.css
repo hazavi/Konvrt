@@ -6,42 +6,29 @@
   justify-content: center;
   min-height: 0;
   overflow: hidden;
-  background: linear-gradient(180deg, var(--card), var(--background));
-  border: 1.5px dashed var(--input);
+  background: var(--card);
+  border: 3px dashed var(--border);
   border-radius: var(--radius-lg);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition);
 }
 #dropzone::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse at 50% 0%,
-    var(--primary-glow),
-    transparent 60%
-  );
-  opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
+  display: none;
 }
-#dropzone:hover::before,
-#dropzone.drag-over::before {
-  opacity: 1;
+#dropzone:hover {
+  background: var(--muted);
 }
 #dropzone.has-files {
   flex: 0 0 auto;
   padding: 0;
   background: transparent;
   border: none;
-}
-#dropzone.has-files::before {
-  display: none;
+  box-shadow: none;
 }
 #dropzone.drag-over {
-  background: var(--primary-glow);
-  border-color: var(--primary);
-  box-shadow: inset 0 0 30px var(--primary-glow);
-  transform: scale(1.003);
+  background: var(--primary);
+  box-shadow: 2px 2px 0 0 #000;
+  transform: translate(4px, 4px);
 }
 
 #empty-state {
@@ -61,23 +48,25 @@
   width: 64px;
   height: 64px;
   margin-bottom: 6px;
-  border: 1.5px dashed var(--input);
-  border-radius: 50%;
-  animation: pulse-ring 3.5s ease-in-out infinite;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius-md);
+  animation: none;
 }
 .drop-ring-inner {
   display: grid;
   place-items: center;
   width: 46px;
   height: 46px;
-  background: var(--secondary);
-  border-radius: 50%;
-  color: var(--primary);
+  background: var(--primary);
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  color: var(--foreground);
 }
 
 .drop-title {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 800;
   letter-spacing: -0.3px;
 }
 .drop-subtitle {
@@ -88,9 +77,6 @@
 
 .browse-btn {
   margin-top: 4px;
-}
-.browse-btn:hover {
-  box-shadow: 0 0 16px var(--primary-glow);
 }
 
 .format-tags {

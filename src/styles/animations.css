@@ -35,10 +35,10 @@
 @keyframes progress-glow {
   0%,
   100% {
-    box-shadow: 0 0 8px var(--primary-glow);
+    box-shadow: 2px 2px 0 0 #000;
   }
   50% {
-    box-shadow: 0 0 16px var(--primary-glow-strong);
+    box-shadow: 4px 4px 0 0 #000;
   }
 }
 

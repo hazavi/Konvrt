@@ -10,10 +10,13 @@ import {
   Folder,
   Globe,
   LayoutGrid,
+  Minus,
   Music,
   Play,
   RotateCcw,
   Shrink,
+  Square,
+  SquareStack,
   Video,
   X,
 } from "lucide";
@@ -37,6 +40,9 @@ const LUCIDE = {
   music: Music,
   globe: Globe,
   refresh: RotateCcw,
+  minimize: Minus,
+  maximize: Square,
+  restore: SquareStack,
 } satisfies Record<string, typeof Check>;
 
 // Brand marks are not part of Lucide.
@@ -61,7 +67,7 @@ const isBrand = (name: IconName): name is keyof typeof BRANDS => name in BRANDS;
 
 export function icon(
   name: IconName,
-  { size = 16, stroke = 2, class: className, filled = false }: IconOptions = {},
+  { size = 16, stroke = 2.5, class: className, filled = false }: IconOptions = {},
 ): string {
   const cls = className ? `icon ${className}` : "icon";
   const common = `class="${cls}" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"`;

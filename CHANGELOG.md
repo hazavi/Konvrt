@@ -10,7 +10,8 @@ All notable changes to Konvrt are documented here.
 - Video downloads no longer leave separate video/audio stream files behind; when ffmpeg is unavailable a single-file format is downloaded instead
 
 ### Changed
-- UI restyled with shadcn-style design tokens and Lucide icons; styles split into per-component files
+- UI restyled with a Neobrutalism theme (thick black borders, hard shadows, flat colors, Space Grotesk font) using shadcn-style design tokens and Lucide icons; styles split into per-component files
+- Native window controls replaced with a frameless window and custom Neobrutalism minimize, maximize, and close buttons
 
 ---
 

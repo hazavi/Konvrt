@@ -2,22 +2,14 @@
   position: relative;
   flex-shrink: 0;
   padding: 14px 20px;
-  background: linear-gradient(180deg, var(--card), var(--background));
-  border-top: 1px solid var(--border);
-  backdrop-filter: blur(16px);
+  background: var(--secondary);
+  border-top: 3px solid var(--border);
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 #convert-bar::before {
-  content: "";
-  position: absolute;
-  top: -1px;
-  right: 0;
-  left: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--primary-glow) 50%, transparent);
-  pointer-events: none;
+  display: none;
 }
 #convert-bar.hidden {
   position: absolute;
@@ -67,23 +59,22 @@
   font-variant-numeric: tabular-nums;
 }
 .bar-divider {
-  width: 1px;
-  height: 18px;
+  width: 2px;
+  height: 20px;
   background: var(--border);
 }
 .bar-chip {
   max-width: 180px;
 }
 .bar-chip:hover {
-  border-color: var(--primary);
-  background: var(--primary-glow);
+  background: var(--primary);
   color: var(--foreground);
 }
 
 .field-label {
-  color: var(--muted-foreground);
-  font-size: 9.5px;
-  font-weight: 600;
+  color: var(--foreground);
+  font-size: 10px;
+  font-weight: 800;
   letter-spacing: 0.6px;
   text-transform: uppercase;
   white-space: nowrap;
@@ -133,29 +124,23 @@
   background: transparent;
 }
 .field-range::-webkit-slider-thumb {
-  width: 14px;
-  height: 14px;
-  margin-top: -5px;
-  background: #fff;
-  border: 2px solid var(--primary);
-  border-radius: 50%;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  background: var(--primary);
+  border: var(--bw) solid var(--border);
+  border-radius: 3px;
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition:
-    box-shadow 0.15s,
-    transform 0.15s;
+  transition: transform 0.1s;
   -webkit-appearance: none;
 }
 .field-range::-webkit-slider-thumb:hover {
-  box-shadow:
-    0 0 0 4px var(--primary-glow),
-    0 1px 4px rgba(0, 0, 0, 0.3);
-  transform: scale(1.1);
+  background: var(--primary-hover);
 }
 .field-range:active::-webkit-slider-thumb {
-  box-shadow:
-    0 0 0 6px var(--primary-glow-strong),
-    0 1px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: none;
+  transform: translate(2px, 2px);
 }
 .slider-track {
   position: absolute;
@@ -175,9 +160,8 @@
   height: 20px;
 }
 .quality-help:hover {
-  border-color: var(--primary);
-  background: var(--primary-glow);
-  color: var(--primary-light);
+  background: var(--primary);
+  color: var(--foreground);
 }
 
 .quality-tooltip {
@@ -189,9 +173,9 @@
   min-width: 220px;
   padding: 10px 12px;
   background: var(--popover);
-  border: 1px solid var(--input);
+  border: var(--bw) solid var(--border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
   translate: -50% 0;
   animation: fade-in 0.15s ease-out;
 }
@@ -205,15 +189,15 @@
   width: 8px;
   height: 8px;
   background: var(--popover);
-  border-right: 1px solid var(--input);
-  border-bottom: 1px solid var(--input);
+  border-right: var(--bw) solid var(--border);
+  border-bottom: var(--bw) solid var(--border);
   transform: translateX(-50%) rotate(45deg);
 }
 .tooltip-title {
   margin-bottom: 6px;
-  color: var(--secondary-foreground);
+  color: var(--foreground);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
@@ -235,7 +219,7 @@
 }
 .overall-progress .progress {
   flex: 1;
-  height: 2px;
+  height: 10px;
 }
 .overall-text {
   min-width: 30px;

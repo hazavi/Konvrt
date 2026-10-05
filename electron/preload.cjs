@@ -1,6 +1,12 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('konvrt', {
+  windowMinimize: () => ipcRenderer.invoke('window-minimize'),
+  windowToggleMaximize: () => ipcRenderer.invoke('window-toggle-maximize'),
+  windowClose: () => ipcRenderer.invoke('window-close'),
+  onWindowMaximized: (callback) => {
+    ipcRenderer.on('window-maximized', (_event, maximized) => callback(maximized));
+  },
   selectFiles: () => ipcRenderer.invoke('select-files'),
   selectOutputDir: () => ipcRenderer.invoke('select-output-dir'),
   convert: (job) => ipcRenderer.invoke('convert', job),

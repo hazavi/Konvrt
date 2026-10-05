@@ -52,17 +52,30 @@
   gap: 6px;
   height: 32px;
   padding: 0 12px;
-  border: 1px solid transparent;
+  border: var(--bw) solid var(--border);
   border-radius: var(--radius-md);
-  background: transparent;
+  background: var(--card);
   color: var(--foreground);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 700;
   white-space: nowrap;
-  transition: all var(--transition);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition),
+    background var(--transition);
+}
+.btn:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 0 #000;
+}
+.btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: none;
 }
 .btn:disabled {
-  opacity: 0.4;
+  opacity: 0.5;
+  box-shadow: none;
   pointer-events: none;
 }
 .btn-sm {
@@ -93,92 +106,85 @@
 .btn-primary {
   background: var(--primary);
   color: var(--primary-foreground);
-  box-shadow: 0 2px 10px var(--primary-glow);
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--primary-hover);
-  box-shadow: 0 4px 20px var(--primary-glow-strong);
-  transform: translateY(-1px);
-}
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
 }
 .btn-primary.is-busy {
   pointer-events: none;
-  animation: progress-glow 2s ease-in-out infinite;
+  background: var(--warning);
 }
 .btn-primary.is-done {
-  background: var(--success-strong);
-  box-shadow: 0 2px 12px color-mix(in srgb, var(--success) 20%, transparent);
+  background: var(--success);
   animation: success-pop 0.4s ease-out;
 }
 .btn-primary.is-done:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--success-strong) 85%, black);
+  background: var(--success-strong);
 }
 
 .btn-outline {
-  border-color: var(--border);
-  background: var(--secondary);
-  color: var(--muted-foreground);
+  background: var(--card);
+  color: var(--foreground);
 }
 .btn-outline:hover:not(:disabled) {
-  border-color: var(--input);
-  color: var(--secondary-foreground);
+  background: var(--secondary);
 }
 .btn-outline.active {
-  border-color: var(--primary);
-  background: var(--primary-glow);
+  background: var(--primary);
   color: var(--foreground);
-  box-shadow: 0 0 8px var(--primary-glow);
 }
 
 .btn-ghost {
-  color: var(--muted-foreground);
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--foreground);
 }
 .btn-ghost:hover:not(:disabled) {
-  background: var(--accent);
-  color: var(--foreground);
+  border-color: var(--border);
+  background: var(--secondary);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Combine with .btn-outline / .btn-ghost */
 .btn-danger:hover:not(:disabled) {
-  border-color: var(--destructive);
-  background: var(--destructive-bg);
-  color: var(--destructive);
+  background: var(--destructive);
+  color: #000;
 }
 
 /* ── Segmented control (tabs / toggles) ── */
 .segmented {
   display: inline-flex;
   gap: 2px;
-  padding: 2px;
-  background: var(--muted);
-  border: 1px solid var(--border);
+  padding: 3px;
+  background: var(--card);
+  border: var(--bw) solid var(--border);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 .segmented-item {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 5px 14px;
-  border: none;
-  border-radius: calc(var(--radius-md) - 2px);
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--muted-foreground);
+  color: var(--foreground);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 700;
   transition: all var(--transition);
 }
 .segmented-item:hover {
-  color: var(--secondary-foreground);
+  background: var(--secondary);
 }
 .segmented-item.active {
+  border-color: var(--border);
   background: var(--primary);
   color: var(--primary-foreground);
-  box-shadow: 0 1px 6px var(--primary-glow);
 }
 .segmented-item .icon {
-  opacity: 0.6;
+  opacity: 0.7;
 }
 .segmented-item.active .icon {
   opacity: 1;
@@ -196,9 +202,8 @@
   letter-spacing: 0.3px;
 }
 .segmented-neutral .segmented-item.active {
-  background: var(--accent);
+  background: var(--secondary);
   color: var(--foreground);
-  box-shadow: none;
 }
 
 /* ── Input / select ── */
@@ -206,22 +211,21 @@
   height: 36px;
   padding: 0 12px;
   background: var(--card);
-  border: 1px solid var(--border);
+  border: var(--bw) solid var(--border);
   border-radius: var(--radius-md);
   color: var(--foreground);
   font-size: 13px;
+  font-weight: 600;
   outline: none;
-  transition:
-    border-color var(--transition),
-    box-shadow var(--transition);
+  transition: box-shadow var(--transition);
 }
 .input::placeholder {
   color: var(--muted-foreground);
   opacity: 0.6;
 }
 .input:focus-visible {
-  border-color: var(--ring);
-  box-shadow: 0 0 0 3px var(--primary-glow);
+  box-shadow: var(--shadow-sm);
+  background: var(--muted);
 }
 .input-sm {
   height: 28px;
@@ -236,46 +240,43 @@
   align-items: center;
   flex-shrink: 0;
   padding: 1px 6px;
-  border-radius: 4px;
-  background: color-mix(
-    in srgb,
-    var(--tone, var(--muted-foreground)) 12%,
-    transparent
-  );
-  color: var(--tone, var(--muted-foreground));
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--tone, var(--secondary));
+  color: #000;
   font-size: 9px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.4px;
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
 }
 .badge-outline {
   padding: 2px 7px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--muted-foreground);
+  background: var(--card);
+  color: var(--foreground);
   text-transform: none;
 }
 
 /* ── Card ── */
 .card {
   background: var(--card);
-  border: 1px solid var(--border);
+  border: var(--bw) solid var(--border);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
 }
 
 /* ── Progress ── */
 .progress {
-  height: 4px;
-  background: var(--border);
-  border-radius: 999px;
+  height: 10px;
+  background: var(--card);
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary), var(--primary-light));
-  border-radius: inherit;
+  background: var(--primary);
+  border-right: var(--bw) solid var(--border);
   transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

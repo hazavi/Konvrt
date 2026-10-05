@@ -34,6 +34,8 @@ Everything runs on your computer.
 
 Extras: GIF creation from video, audio extraction from video, PDF to image and back, document to HTML, and a preview window for images and videos.
 
+The interface uses a Neobrutalism design: thick black borders, hard offset shadows, flat bright colors, and a custom frameless title bar with its own minimize, maximize, and close buttons.
+
 ## Supported formats
 
 | Type      | Formats                                                                    |
@@ -88,7 +90,7 @@ To build locally, run `npm run build:astro` then `npx electron-builder --win`. T
 
 | Layer       | Technology                              |
 | :---------- | :-------------------------------------- |
-| Interface   | Astro, Lucide icons, shadcn-style CSS   |
+| Interface   | Astro, Lucide icons (as used by 21st.dev), Neobrutalism CSS, Space Grotesk |
 | Desktop     | Electron 33                             |
 | Video/Audio | FFmpeg (fluent-ffmpeg)                  |
 | Images      | Sharp, Jimp                             |
@@ -101,7 +103,7 @@ To build locally, run `npm run build:astro` then `npx electron-builder --win`. T
 electron/        Main process, preload bridge, converter, downloader/
 src/
   components/    Astro components
-  styles/        Design tokens, shared UI styles, one file per component
+  styles/        Design tokens (Neobrutalism theme), shared UI styles, one file per component
   scripts/       Frontend logic (state, render, convert, download)
 start-*.bat      Windows dev launchers
 ```

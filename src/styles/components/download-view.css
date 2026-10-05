@@ -36,14 +36,15 @@
   width: 72px;
   height: 72px;
   margin-bottom: 4px;
-  background: var(--primary-glow);
-  border: 1.5px solid color-mix(in srgb, var(--primary) 15%, transparent);
-  border-radius: 50%;
-  color: var(--primary);
+  background: var(--primary);
+  border: 3px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  color: var(--foreground);
 }
 .dl-setup-title {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
 }
 .dl-setup-desc {
   max-width: 380px;
@@ -53,8 +54,9 @@
 }
 .dl-setup-status {
   min-height: 16px;
-  color: var(--primary);
+  color: var(--foreground);
   font-size: 11px;
+  font-weight: 600;
 }
 .dl-setup-status[data-tone] {
   color: var(--tone);
@@ -108,7 +110,8 @@
   height: 90px;
   flex-shrink: 0;
   overflow: hidden;
-  background: var(--secondary);
+  background: var(--tone, var(--secondary));
+  border: var(--bw) solid var(--border);
   border-radius: var(--radius-md);
 }
 .dl-thumb {
@@ -121,8 +124,8 @@
   right: 4px;
   bottom: 4px;
   padding: 2px 6px;
-  background: rgba(0, 0, 0, 0.8);
-  border-radius: 4px;
+  background: #000;
+  border-radius: 2px;
   color: #fff;
   font-size: 10px;
   font-weight: 700;
@@ -164,9 +167,9 @@
 .dl-label {
   display: block;
   margin-bottom: 6px;
-  color: var(--muted-foreground);
+  color: var(--foreground);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.8px;
   text-transform: uppercase;
 }
@@ -205,8 +208,8 @@
 }
 .dl-proxy-toggle:hover,
 .dl-proxy-toggle.active {
-  border-color: var(--primary);
-  color: var(--primary);
+  background: var(--primary);
+  color: var(--foreground);
 }
 .dl-proxy-input {
   width: 200px;
@@ -230,18 +233,18 @@
   justify-content: space-between;
 }
 .dl-progress-label {
-  color: var(--secondary-foreground);
+  color: var(--foreground);
   font-size: 12px;
-  font-weight: 500;
-}
-.dl-progress-pct {
-  color: var(--primary);
-  font-size: 13px;
   font-weight: 700;
 }
+.dl-progress-pct {
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 800;
+}
 .dl-progress .progress {
-  height: 6px;
-  background: var(--secondary);
+  height: 14px;
+  background: var(--card);
 }
 .dl-progress-meta {
   color: var(--muted-foreground);

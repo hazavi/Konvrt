@@ -20,10 +20,9 @@
   padding: 12px 14px;
   overflow: hidden;
   background: var(--card);
-  border: 1px solid color-mix(in srgb, var(--tone) 20%, var(--border));
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(12px);
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
   pointer-events: auto;
   animation: toast-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
@@ -37,9 +36,10 @@
   width: 28px;
   height: 28px;
   flex-shrink: 0;
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--tone) 12%, transparent);
-  color: var(--tone);
+  border: var(--bw) solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--tone);
+  color: #000;
 }
 .toast-body {
   flex: 1;
@@ -47,7 +47,7 @@
 }
 .toast-title {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.3;
 }
 .toast-meta {
@@ -58,7 +58,7 @@
 .toast-close {
   width: 22px;
   height: 22px;
-  opacity: 0.5;
+  opacity: 1;
 }
 .toast-close:hover:not(:disabled) {
   opacity: 1;
@@ -68,7 +68,7 @@
   position: absolute;
   bottom: 0;
   left: 0;
-  height: 2px;
-  background: var(--primary);
+  height: 4px;
+  background: #000;
   transition: width linear;
 }
