@@ -4,246 +4,107 @@
 
 # Konvrt
 
-A multimedia converter, compressor, and downloader built with Electron, FFmpeg, Sharp, and MuPDF.
-Convert, compress, and download videos, audio, images, documents, and PDFs -- entirely offline on your machine.
+Convert, compress, and download video, audio, images, and PDFs.
+Everything runs on your computer.
 
 ![Electron](https://img.shields.io/badge/Electron-33-47848F?logo=electron&logoColor=white)
 ![Platform](https://img.shields.io/badge/platform-Windows-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-## Preview
-
-<div align="center">
-  <img src="public/konvrt_preview.gif" alt="Konvrt Preview" width="780" />
-</div>
+<img src="public/konvrt_preview.gif" alt="Konvrt Preview" width="780" />
 
 </div>
 
 ---
 
-## Supported Formats
+## Install
 
-### Video (21 formats)
+1. Open the [latest release](https://github.com/hazavi/Konvrt/releases/latest).
+2. Download `Konvrt-Setup-<version>.exe`.
+3. Run the installer.
 
-MP4, MKV, AVI, MOV, WEBM, FLV, WMV, TS, M2TS, MTS, 3GP, OGV, VOB, MPG, MPEG, M4V, DIVX, ASF, RM, RMVB, F4V
+## What it does
 
-### Audio (17 formats)
+| Tab          | Use it to                                                                    |
+| :----------- | :--------------------------------------------------------------------------- |
+| **Convert**  | Change a file to another format. Works in batches with per-file progress.    |
+| **Compress** | Make video, audio, images, and GIFs smaller with a quality slider.           |
+| **Download** | Save YouTube and TikTok videos (and 1000+ other sites) as video or audio.    |
+| **Tools**    | Jump straight to a specific conversion, like "MOV to MP4" or "Video to MP3". |
 
-MP3, WAV, OGG, FLAC, AAC, M4A, OPUS, WMA, AIFF, AC3, ALAC, DTS, AMR, AU, RA, WV, APE
+Extras: GIF creation from video, audio extraction from video, PDF to image and back, document to HTML, and a preview window for images and videos.
 
-### Image (20 formats)
+## Supported formats
 
-JPG, PNG, GIF, BMP, TIFF, WEBP, SVG, AVIF, HEIC, HEIF, ICO, JXL, JP2, PSD, RAW, CR2, NEF, DNG
+| Type      | Formats                                                                    |
+| :-------- | :------------------------------------------------------------------------- |
+| Video     | MP4, MKV, AVI, MOV, WEBM, FLV, WMV, TS, 3GP, OGV, M4V, MPG and more       |
+| Audio     | MP3, WAV, OGG, FLAC, AAC, M4A, WMA, OPUS, AIFF, AC3, ALAC and more         |
+| Image     | JPG, PNG, WEBP, AVIF, GIF, BMP, TIFF, HEIC, ICO, JXL, SVG and more        |
+| PDF       | PDF to PNG, JPG, WEBP, AVIF, TIFF, BMP, GIF, and images to PDF             |
+| Documents | TXT, MD, HTML, CSV, JSON, XML, YAML, TSV, LOG, RTF, and PDF                |
 
-### Document (13 formats)
+## Downloads
 
-TXT, MD, HTML, CSV, JSON, XML, YAML, YML, TSV, LOG, RTF, HTM, Markdown
-
-### PDF
-
-PDF to Image (PNG, JPG, WEBP, AVIF, TIFF, BMP, GIF) and Image to PDF
-
----
-
-## Features
-
-### Convert and Compress
-
-- **Video** -- MP4, MKV, AVI, MOV, WEBM, FLV, WMV, TS, 3GP, OGV, M4V, MPG
-- **Audio** -- MP3, WAV, OGG, FLAC, AAC, M4A, WMA, OPUS, AIFF, AC3, ALAC
-- **Image** -- JPG, PNG, WEBP, AVIF, GIF, BMP, TIFF, HEIF, ICO, JXL, SVG
-- **Document** -- HTML, TXT, MD, CSV, JSON, PDF (between document formats)
-- **PDF** -- PDF to image and image to PDF (multi-page support)
-- **GIF Creation** -- Convert any video to animated GIF
-- **Video to Audio** -- Extract audio from any video (MP3, M4A, WAV, FLAC, OGG, OPUS, etc.)
-- **Animated GIF to Video** -- Convert GIF to MP4 or WEBM
-- **Compression** -- Reduce file sizes for video, audio, image, and GIF with quality control
-- **Batch Processing** -- Convert multiple files at once with per-file progress tracking
-- **File Previews** -- Thumbnails for images/videos and full preview modal with navigation
-
-### Document to HTML Parser
-
-Convert documents to well-structured, styled HTML with full parser support:
-
-- **Markdown to HTML** -- Headers, bold, italic, strikethrough, links, images, code blocks, blockquotes, lists (ordered and unordered), tables, and horizontal rules
-- **CSV / TSV to HTML** -- Generates styled HTML tables with headers, proper escaping, and quoted field support
-- **JSON to HTML** -- Syntax-highlighted JSON with color-coded keys, strings, numbers, booleans, and nulls
-- **XML to HTML** -- Formatted and escaped XML code display
-- **YAML to HTML** -- Formatted code display
-- **Plain Text to HTML** -- Paragraph wrapping with line break preservation
-- **Log to HTML** -- Monospace line-by-line display
-- **RTF to HTML** -- Basic RTF control code stripping and text extraction
-
-Additional document conversions:
-
-- **HTML to Markdown** -- Reverse conversion (headings, bold, italic, links, images, lists)
-- **HTML to Plain Text** -- Tag stripping with entity decoding
-- **CSV to JSON** -- Structured array-of-objects output
-- **JSON to CSV** -- Flat JSON arrays to comma-separated values
-- **Any Document to PDF** -- Text extraction and PDF generation via PDFKit
-
-### Download
-
-- **YouTube** -- Download video and audio via yt-dlp
-- **TikTok and Other Platforms** -- Generic yt-dlp support for 1000+ sites
-- **Format Selection** -- MP4, WEBM video or MP3, M4A, WAV, FLAC, OGG audio
-- **Quality Options** -- Best, 1080p, 720p, 480p
-- **Proxy Support** -- Optional HTTP/SOCKS proxy configuration
-- **Progress Tracking** -- Real-time progress with speed and ETA display
-
-### General
-
-- **100% Local** -- All processing happens on your machine. No uploads, no servers.
-- **Cross-Platform** -- Windows (macOS and Linux support coming soon)
+- Pick MP4 or WEBM for video, or MP3, M4A, WAV, FLAC, OGG for audio.
+- Choose Best, 1080p, 720p, or 480p.
+- Optional HTTP or SOCKS proxy.
+- The first time, Konvrt asks to install yt-dlp, the tool that does the downloading.
 
 ---
 
-## Tech Stack
+## Development
 
-| Layer       | Technology                                  |
-| :---------- | :------------------------------------------ |
-| Frontend    | Astro (static output), Lucide icons, shadcn-style design tokens |
-| Desktop     | Electron 33                                 |
-| Video/Audio | FFmpeg via fluent-ffmpeg                    |
-| Images      | Sharp, Jimp (BMP fallback)                  |
-| PDF         | MuPDF (PDF to image), PDFKit (image to PDF) |
-| Documents   | Built-in parsers (Markdown, CSV, JSON, XML) |
-| Downloads   | yt-dlp                                      |
-
----
-
-## Project Structure
-
-```
-Konvrt/
-├── electron/
-│   ├── main.cjs              # Electron main process, IPC handlers, static server
-│   ├── preload.cjs           # Context bridge (renderer to main)
-│   ├── converter.cjs         # FFmpeg, Sharp, MuPDF, PDFKit, document parser engine
-│   ├── dev.cjs               # `npm start` launcher (Astro dev server + Electron)
-│   └── downloader/
-│       ├── index.cjs         # Unified download API (routes YouTube vs generic)
-│       ├── settings.cjs      # Paths, proxy config, yt-dlp binary location
-│       ├── formats.cjs       # yt-dlp format selection and ffmpeg location
-│       ├── http.cjs          # HTTP/HTTPS utilities, file download with progress
-│       ├── youtube.cjs       # YouTube-specific yt-dlp download
-│       └── ytdlp.cjs         # yt-dlp binary management, generic downloads
-├── src/
-│   ├── layouts/
-│   │   └── Layout.astro      # HTML shell, font and global stylesheet imports
-│   ├── styles/
-│   │   ├── global.css        # Imports the shared stylesheets below
-│   │   ├── tokens.css        # Design tokens (colors, radius, shadows)
-│   │   ├── base.css          # Reset, body, scrollbar
-│   │   ├── animations.css    # Keyframes
-│   │   ├── ui.css            # Shared button, tab, input, badge, card, progress
-│   │   ├── toast.css         # Toast notifications
-│   │   └── components/       # One stylesheet per component
-│   ├── components/
-│   │   ├── Icon.astro        # Lucide icon renderer
-│   │   ├── Header.astro      # Navigation tabs (Convert, Compress, Download, Tools)
-│   │   ├── DropZone.astro    # Drag-and-drop file input with format tags
-│   │   ├── FileList.astro    # File list container
-│   │   ├── PreviewModal.astro# Image/video preview modal
-│   │   ├── ConvertBar.astro  # Bottom bar: format, quality, mode, actions
-│   │   ├── ToolsPanel.astro  # Converter and compressor tool grids (6 categories)
-│   │   └── DownloadView.astro# Download UI: URL input, info, options, progress
-│   ├── pages/
-│   │   └── index.astro       # App entry, script bootstrap
-│   └── scripts/
-│       ├── main.ts           # Init and event wiring
-│       ├── api.ts            # Typed access to the Electron preload bridge
-│       ├── dom.ts            # Small DOM helpers
-│       ├── icons.ts          # Lucide icon registry and SVG builder
-│       ├── toast.ts          # Toast notifications
-│       ├── state.ts          # Application state
-│       ├── render.ts         # DOM rendering with smart patching
-│       ├── convert.ts        # Conversion loop, progress tracking
-│       ├── download.ts       # Download handlers and event wiring
-│       ├── file-ops.ts       # File array management, type detection
-│       ├── preview.ts        # Image/video preview modal
-│       ├── helpers.ts        # Utilities (format, duration, preview)
-│       ├── constants.ts      # Format lists (video, audio, image, document, PDF)
-│       ├── tools-data.ts     # 120+ tool cards for tools grid
-│       └── types.ts          # TypeScript interfaces
-├── start-browser.bat         # Astro dev server + browser tab (Windows)
-├── start-electron.bat        # Astro dev server + Electron (Windows)
-├── package.json
-├── astro.config.mjs
-├── tsconfig.json
-└── Dockerfile
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18+)
-- npm
-
-### Install
+You need [Node.js](https://nodejs.org/) 18 or newer.
 
 ```sh
 git clone https://github.com/hazavi/Konvrt.git
 cd Konvrt
 npm install
-```
-
-### Development
-
-Start the Astro dev server and Electron together:
-
-```sh
 npm start
 ```
 
-On Windows you can also double-click `start-electron.bat` (app) or `start-browser.bat` (UI in a browser tab; file picking and conversion need Electron).
+`npm start` runs the Astro dev server and opens Electron.
 
-Or run them separately:
+| Command                | What it does                                  |
+| :--------------------- | :-------------------------------------------- |
+| `npm start`            | Astro dev server and Electron together        |
+| `npm run dev:astro`    | Frontend only, at `http://localhost:4321`     |
+| `npm run dev:electron` | Electron only (needs the Astro server)        |
+| `npm run build`        | Build the frontend and package the app        |
 
-```sh
-npm run dev:astro      # Start Astro on localhost:4321
-npm run dev:electron   # Launch Electron (requires Astro running)
+On Windows you can also double-click `start-electron.bat` or `start-browser.bat`.
+The browser version can show the interface, but file picking, conversion, and downloads need Electron.
+
+## Publishing a release
+
+1. Update `version` in `package.json` and add an entry to `CHANGELOG.md`.
+2. Create a release on GitHub.
+3. The **Build & Release** workflow builds the Windows installer and attaches `Konvrt-Setup-<version>.exe` to the release.
+
+To build locally, run `npm run build:astro` then `npx electron-builder --win`. The installer ends up in `release/`.
+
+## Tech stack
+
+| Layer       | Technology                              |
+| :---------- | :-------------------------------------- |
+| Interface   | Astro, Lucide icons, shadcn-style CSS   |
+| Desktop     | Electron 33                             |
+| Video/Audio | FFmpeg (fluent-ffmpeg)                  |
+| Images      | Sharp, Jimp                             |
+| PDF         | MuPDF, PDFKit                           |
+| Downloads   | yt-dlp                                  |
+
+## Project layout
+
 ```
-
-### Build
-
-Build the Astro frontend and package the Electron app:
-
-```sh
-npm run build
+electron/        Main process, preload bridge, converter, downloader/
+src/
+  components/    Astro components
+  styles/        Design tokens, shared UI styles, one file per component
+  scripts/       Frontend logic (state, render, convert, download)
+start-*.bat      Windows dev launchers
 ```
-
-This runs `astro build` then `electron-builder` for Windows, macOS, and Linux. Output goes to `release/`.
-
-### Docker
-
-Build and run the Astro static preview in a container:
-
-```sh
-docker build -t konvrt .
-docker run -p 4321:4321 konvrt
-```
-
-> **Note:** The Docker image serves the Astro static frontend only. Electron desktop features (file conversion, downloads) require the native desktop build.
-
----
-
-## Commands
-
-| Command                | Action                                     |
-| :--------------------- | :----------------------------------------- |
-| `npm install`          | Install dependencies                       |
-| `npm run dev`          | Start Astro + Electron concurrently        |
-| `npm run dev:astro`    | Start Astro dev server on port 4321        |
-| `npm run dev:electron` | Launch Electron (connect to running Astro) |
-| `npm run build`        | Build frontend and package desktop app     |
-| `npm run preview`      | Preview the Astro build locally            |
-
----
-
 ## Conversion Matrix
 
 ### Media Conversions
@@ -282,7 +143,6 @@ Planned features and improvements for future releases:
 - [ ] **Drag and Drop Reorder** -- Reorder files in the conversion queue
 - [ ] **Auto-Update** -- In-app update notifications and one-click install
 
----
 
 ## License
 

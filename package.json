@@ -1,7 +1,7 @@
 {
   "name": "konvrt",
   "version": "1.0.2",
-  "description": "Media converter & compression — video, audio, and image processing locally on your machine.",
+  "description": "Convert, compress, and download video, audio, images, and PDFs. Everything runs on your computer.",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -34,7 +34,8 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "public/konvrt_ico.ico"
+      "icon": "public/konvrt_ico.ico",
+      "artifactName": "Konvrt-Setup-${version}.${ext}"
     },
     "mac": {
       "target": "dmg",
