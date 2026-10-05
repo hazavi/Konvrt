@@ -5,6 +5,7 @@
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
+    "start": "node electron/dev.cjs",
     "dev:astro": "astro dev",
     "build:astro": "astro build",
     "dev:electron": "electron .",
