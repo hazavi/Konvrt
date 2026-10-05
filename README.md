@@ -102,7 +102,7 @@ Additional document conversions:
 
 | Layer       | Technology                                  |
 | :---------- | :------------------------------------------ |
-| Frontend    | Astro (static output)                       |
+| Frontend    | Astro (static output), Lucide icons, shadcn-style design tokens |
 | Desktop     | Electron 33                                 |
 | Video/Audio | FFmpeg via fluent-ffmpeg                    |
 | Images      | Sharp, Jimp (BMP fallback)                  |
@@ -120,37 +120,54 @@ Konvrt/
 │   ├── main.cjs              # Electron main process, IPC handlers, static server
 │   ├── preload.cjs           # Context bridge (renderer to main)
 │   ├── converter.cjs         # FFmpeg, Sharp, MuPDF, PDFKit, document parser engine
-│   ├── dev.cjs               # Dev helper (waits for Astro server)
+│   ├── dev.cjs               # `npm start` launcher (Astro dev server + Electron)
 │   └── downloader/
 │       ├── index.cjs         # Unified download API (routes YouTube vs generic)
 │       ├── settings.cjs      # Paths, proxy config, yt-dlp binary location
+│       ├── formats.cjs       # yt-dlp format selection and ffmpeg location
 │       ├── http.cjs          # HTTP/HTTPS utilities, file download with progress
 │       ├── youtube.cjs       # YouTube-specific yt-dlp download
 │       └── ytdlp.cjs         # yt-dlp binary management, generic downloads
 ├── src/
 │   ├── layouts/
-│   │   └── Layout.astro      # Global shell, CSS design system, color variables
+│   │   └── Layout.astro      # HTML shell, font and global stylesheet imports
+│   ├── styles/
+│   │   ├── global.css        # Imports the shared stylesheets below
+│   │   ├── tokens.css        # Design tokens (colors, radius, shadows)
+│   │   ├── base.css          # Reset, body, scrollbar
+│   │   ├── animations.css    # Keyframes
+│   │   ├── ui.css            # Shared button, tab, input, badge, card, progress
+│   │   ├── toast.css         # Toast notifications
+│   │   └── components/       # One stylesheet per component
 │   ├── components/
+│   │   ├── Icon.astro        # Lucide icon renderer
 │   │   ├── Header.astro      # Navigation tabs (Convert, Compress, Download, Tools)
 │   │   ├── DropZone.astro    # Drag-and-drop file input with format tags
-│   │   ├── FileList.astro    # File list with thumbnails, progress, preview modal
+│   │   ├── FileList.astro    # File list container
+│   │   ├── PreviewModal.astro# Image/video preview modal
 │   │   ├── ConvertBar.astro  # Bottom bar: format, quality, mode, actions
 │   │   ├── ToolsPanel.astro  # Converter and compressor tool grids (6 categories)
 │   │   └── DownloadView.astro# Download UI: URL input, info, options, progress
 │   ├── pages/
 │   │   └── index.astro       # App entry, script bootstrap
 │   └── scripts/
-│       ├── main.ts           # Init, event wiring, IPC listeners
-│       ├── state.ts          # Reactive application state
+│       ├── main.ts           # Init and event wiring
+│       ├── api.ts            # Typed access to the Electron preload bridge
+│       ├── dom.ts            # Small DOM helpers
+│       ├── icons.ts          # Lucide icon registry and SVG builder
+│       ├── toast.ts          # Toast notifications
+│       ├── state.ts          # Application state
 │       ├── render.ts         # DOM rendering with smart patching
 │       ├── convert.ts        # Conversion loop, progress tracking
-│       ├── download.ts       # Download handlers, toast notifications
+│       ├── download.ts       # Download handlers and event wiring
 │       ├── file-ops.ts       # File array management, type detection
 │       ├── preview.ts        # Image/video preview modal
 │       ├── helpers.ts        # Utilities (format, duration, preview)
 │       ├── constants.ts      # Format lists (video, audio, image, document, PDF)
 │       ├── tools-data.ts     # 120+ tool cards for tools grid
 │       └── types.ts          # TypeScript interfaces
+├── start-browser.bat         # Astro dev server + browser tab (Windows)
+├── start-electron.bat        # Astro dev server + Electron (Windows)
 ├── package.json
 ├── astro.config.mjs
 ├── tsconfig.json
@@ -179,8 +196,10 @@ npm install
 Start the Astro dev server and Electron together:
 
 ```sh
-npm run dev
+npm start
 ```
+
+On Windows you can also double-click `start-electron.bat` (app) or `start-browser.bat` (UI in a browser tab; file picking and conversion need Electron).
 
 Or run them separately:
 
