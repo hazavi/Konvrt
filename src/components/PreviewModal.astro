@@ -1,0 +1,33 @@
+---
+import Icon from "./Icon.astro";
+import "../styles/components/preview-modal.css";
+---
+
+<div id="preview-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <button
+      id="preview-close"
+      class="btn btn-outline btn-danger btn-icon btn-round modal-close"
+      title="Close"
+    >
+      <Icon name="close" size={14} stroke={2.5} />
+    </button>
+    <button
+      id="preview-prev"
+      class="btn btn-outline btn-icon btn-round modal-nav modal-prev"
+      title="Previous"
+    >
+      <Icon name="prev" size={18} stroke={2.5} />
+    </button>
+    <button
+      id="preview-next"
+      class="btn btn-outline btn-icon btn-round modal-nav modal-next"
+      title="Next"
+    >
+      <Icon name="next" size={18} stroke={2.5} />
+    </button>
+    <div id="preview-body"></div>
+    <div id="preview-info" class="preview-info"></div>
+  </div>
+</div>

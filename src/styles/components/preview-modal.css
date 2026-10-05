@@ -1,0 +1,104 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+}
+.modal-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 80vw;
+  max-height: 80vh;
+  animation: fade-in 0.2s ease-out;
+}
+
+.modal-close,
+.modal-nav {
+  background: color-mix(in srgb, var(--card) 80%, transparent);
+  backdrop-filter: blur(8px);
+}
+.modal-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+}
+.modal-nav {
+  position: fixed;
+  top: 50%;
+  z-index: 3;
+  width: 40px;
+  height: 40px;
+  opacity: 0.6;
+  transform: translateY(-50%);
+}
+.modal-nav:hover:not(:disabled) {
+  background: var(--card);
+  border-color: var(--primary);
+  color: var(--foreground);
+  opacity: 1;
+}
+.modal-nav:disabled {
+  opacity: 0.15;
+  cursor: not-allowed;
+}
+.modal-prev {
+  left: 16px;
+}
+.modal-next {
+  right: 16px;
+}
+
+#preview-body img,
+#preview-body video {
+  max-width: 78vw;
+  max-height: 70vh;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  outline: none;
+  animation: fade-in 0.15s ease-out;
+}
+
+.preview-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: color-mix(in srgb, var(--card) 70%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  color: var(--secondary-foreground);
+  font-size: 11.5px;
+  text-align: center;
+}
+.preview-name {
+  color: var(--foreground);
+  font-weight: 600;
+}
+.preview-size,
+.preview-dims {
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.preview-counter {
+  color: var(--primary-light);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

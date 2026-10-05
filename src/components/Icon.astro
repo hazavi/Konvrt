@@ -1,0 +1,11 @@
+---
+import { icon, type IconName, type IconOptions } from "../scripts/icons";
+
+interface Props extends IconOptions {
+  name: IconName;
+}
+
+const { name, ...options } = Astro.props;
+---
+
+<Fragment set:html={icon(name, options)} />

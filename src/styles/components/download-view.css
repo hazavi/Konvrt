@@ -1,0 +1,255 @@
+#view-download {
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+#dl-main {
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dl-container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* Setup banner */
+.dl-setup {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+}
+.dl-setup-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 4px;
+  background: var(--primary-glow);
+  border: 1.5px solid color-mix(in srgb, var(--primary) 15%, transparent);
+  border-radius: 50%;
+  color: var(--primary);
+}
+.dl-setup-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+.dl-setup-desc {
+  max-width: 380px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.dl-setup-status {
+  min-height: 16px;
+  color: var(--primary);
+  font-size: 11px;
+}
+.dl-setup-status[data-tone] {
+  color: var(--tone);
+}
+
+/* Input */
+.dl-input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dl-platform-tabs {
+  width: fit-content;
+}
+.dl-url-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dl-url-input {
+  flex: 1;
+  height: 40px;
+  padding: 0 14px;
+}
+.dl-fetch-btn {
+  width: 40px;
+  height: 40px;
+}
+.dl-fetch-btn .spinner {
+  display: none;
+  width: 18px;
+  height: 18px;
+}
+.dl-fetch-btn.loading .icon {
+  display: none;
+}
+.dl-fetch-btn.loading .spinner {
+  display: block;
+}
+
+/* Info card */
+.dl-info-card {
+  display: flex;
+  gap: 14px;
+  padding: 12px;
+  animation: fade-in 0.2s ease-out;
+}
+.dl-thumb-wrap {
+  position: relative;
+  width: 160px;
+  height: 90px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--secondary);
+  border-radius: var(--radius-md);
+}
+.dl-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.dl-duration {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.dl-info-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+}
+.dl-info-title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+.dl-info-uploader {
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.dl-platform-badge {
+  width: fit-content;
+}
+
+/* Options */
+.dl-options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  animation: fade-in 0.2s ease-out;
+}
+.dl-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.dl-format-section,
+.dl-quality-section {
+  display: flex;
+  flex-direction: column;
+}
+.dl-format-btns,
+.dl-quality-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.dl-fmt-btn .icon {
+  opacity: 0.5;
+}
+.dl-fmt-btn.active .icon {
+  opacity: 1;
+}
+
+.dl-output-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.dl-output-chip {
+  max-width: 260px;
+}
+.dl-proxy-row,
+.dl-proxy-panel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dl-proxy-toggle:hover,
+.dl-proxy-toggle.active {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.dl-proxy-input {
+  width: 200px;
+  height: 28px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+/* Progress */
+.dl-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  animation: fade-in 0.2s ease-out;
+}
+.dl-progress-header,
+.dl-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dl-progress-label {
+  color: var(--secondary-foreground);
+  font-size: 12px;
+  font-weight: 500;
+}
+.dl-progress-pct {
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+.dl-progress .progress {
+  height: 6px;
+  background: var(--secondary);
+}
+.dl-progress-meta {
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+
+.dl-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

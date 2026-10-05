@@ -1,18 +1,18 @@
 import { VIDEO_EXTS, AUDIO_EXTS, IMAGE_EXTS, PDF_EXTS, DOCUMENT_EXTS } from "./constants";
 import type { FileEntry } from "./types";
 
+export function getExt(name: string): string {
+  return name.split(".").pop()?.toLowerCase() || "";
+}
+
 export function detectType(name: string): FileEntry["type"] | null {
-  const ext = name.split(".").pop()?.toLowerCase() || "";
+  const ext = getExt(name);
   if (VIDEO_EXTS.includes(ext)) return "video";
   if (AUDIO_EXTS.includes(ext)) return "audio";
   if (IMAGE_EXTS.includes(ext)) return "image";
   if (PDF_EXTS.includes(ext)) return "pdf";
   if (DOCUMENT_EXTS.includes(ext)) return "document";
   return null;
-}
-
-export function getExt(name: string): string {
-  return name.split(".").pop()?.toLowerCase() || "";
 }
 
 export function escapeHtml(str: string): string {
@@ -23,9 +23,13 @@ export function escapeHtml(str: string): string {
     .replace(/"/g, "&quot;");
 }
 
-export function truncatePath(p: string): string {
-  if (p.length <= 30) return p;
-  return "..." + p.slice(-28);
+export function truncatePath(p: string, keep = 28): string {
+  return p.length <= keep + 2 ? p : "..." + p.slice(-keep);
+}
+
+// jpg and jpeg are the same format
+export function normalizeExt(ext: string): string {
+  return ext === "jpg" ? "jpeg" : ext;
 }
 
 export function formatSize(bytes: number): string {
@@ -36,10 +40,8 @@ export function formatSize(bytes: number): string {
   return (bytes / 1073741824).toFixed(2) + " GB";
 }
 
-export function isPreviewable(type: string, _ext: string): boolean {
-  if (type === "image") return true;
-  if (type === "video") return true;
-  return false;
+export function isPreviewable(type: string): boolean {
+  return type === "image" || type === "video";
 }
 
 export function getPreviewUrl(filePath: string): string {

@@ -3,70 +3,31 @@ import Layout from "../layouts/Layout.astro";
 import Header from "../components/Header.astro";
 import DropZone from "../components/DropZone.astro";
 import FileList from "../components/FileList.astro";
+import PreviewModal from "../components/PreviewModal.astro";
 import ConvertBar from "../components/ConvertBar.astro";
 import ToolsPanel from "../components/ToolsPanel.astro";
 import DownloadView from "../components/DownloadView.astro";
+import "../styles/components/app.css";
 ---
 
 <Layout>
   <div id="app">
     <Header />
-    <!-- Toast container -->
     <div id="toast-container" class="toast-container"></div>
     <main id="main-content">
-      <!-- Convert/Compress view -->
       <div id="view-convert">
         <DropZone />
         <FileList />
       </div>
-      <!-- Tools view -->
       <ToolsPanel />
-      <!-- Download view -->
       <DownloadView />
     </main>
     <ConvertBar />
   </div>
+  <PreviewModal />
 </Layout>
-
-<style>
-  #app {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-  }
-  main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 14px 18px 10px;
-    gap: 10px;
-    overflow: hidden;
-    min-height: 0;
-  }
-  #view-convert {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
-  }
-  /* Toast container */
-  .toast-container {
-    position: fixed;
-    top: 52px;
-    right: 16px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    pointer-events: none;
-    max-width: 380px;
-  }
-</style>
 
 <script>
   import { init } from "../scripts/main";
-  document.addEventListener("DOMContentLoaded", () => init());
+  document.addEventListener("DOMContentLoaded", init);
 </script>

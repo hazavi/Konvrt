@@ -1,216 +1,37 @@
 ---
+import Icon from "./Icon.astro";
+import pkg from "../../package.json";
+import "../styles/components/header.css";
 
+const tabs = [
+  { id: "convert", label: "Convert" },
+  { id: "compress", label: "Compress" },
+  { id: "download", label: "Download" },
+  { id: "tools", label: "Tools" },
+] as const;
 ---
 
-<header>
+<header class="app-header">
   <div class="header-left">
     <div class="brand">
-      <img
-        class="logo"
-        src="/konvrt_ico.ico"
-        alt="Konvrt"
-        width="24"
-        height="24"
-      />
+      <img class="logo" src="/konvrt_ico.ico" alt="Konvrt" width="24" height="24" />
       <span class="brand-text">Konvrt</span>
     </div>
-    <nav class="tabs" id="nav-tabs">
-      <button class="tab active" data-tab="convert">
-        <svg
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          ><polyline points="16 3 21 3 21 8"></polyline><line
-            x1="4"
-            y1="20"
-            x2="21"
-            y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line
-            x1="15"
-            y1="15"
-            x2="21"
-            y2="21"></line></svg
-        >
-        Convert
-      </button>
-      <button class="tab" data-tab="compress">
-        <svg
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          ><path d="M12 3v4m0 14v-4M3 12h4m14 0h-4"></path><rect
-            x="8"
-            y="8"
-            width="8"
-            height="8"
-            rx="1"></rect></svg
-        >
-        Compress
-      </button>
-      <button class="tab" data-tab="download">
-        <svg
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          ><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline
-            points="7 10 12 15 17 10"></polyline><line
-            x1="12"
-            y1="15"
-            x2="12"
-            y2="3"></line></svg
-        >
-        Download
-      </button>
-      <button class="tab" data-tab="tools">
-        <svg
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          ><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect
-            x="14"
-            y="3"
-            width="7"
-            height="7"
-            rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"
-          ></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg
-        >
-        Tools
-      </button>
+    <nav class="segmented" id="nav-tabs">
+      {
+        tabs.map((tab, i) => (
+          <button
+            class:list={["segmented-item", "tab", { active: i === 0 }]}
+            data-tab={tab.id}
+          >
+            <Icon name={tab.id} size={15} />
+            {tab.label}
+          </button>
+        ))
+      }
     </nav>
   </div>
   <div class="header-right">
-    <span class="version-badge">v1.0.0</span>
+    <span class="badge badge-outline">v{pkg.version}</span>
   </div>
 </header>
-
-<style>
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    padding-top: env(titlebar-area-height, 0px);
-    height: calc(48px + env(titlebar-area-height, 0px));
-    border-bottom: 1px solid var(--border);
-    background: linear-gradient(
-      180deg,
-      rgba(14, 14, 22, 0.95) 0%,
-      rgba(6, 6, 11, 0.98) 100%
-    );
-    backdrop-filter: blur(12px);
-    -webkit-app-region: drag;
-    user-select: none;
-    flex-shrink: 0;
-    position: relative;
-  }
-  header::after {
-    content: "";
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      var(--accent-glow-strong) 50%,
-      transparent 100%
-    );
-    pointer-events: none;
-  }
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .logo {
-    width: 24px;
-    height: 24px;
-    border-radius: 5px;
-    object-fit: contain;
-  }
-  .brand-text {
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #f0f0fa 0%, #a0a0c0 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .tabs {
-    display: flex;
-    gap: 1px;
-    padding: 2px;
-    background: var(--surface-2);
-    border-radius: var(--radius-sm);
-    -webkit-app-region: no-drag;
-  }
-  .tab {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 14px;
-    border: none;
-    border-radius: 5px;
-    background: transparent;
-    color: var(--text-dim);
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition);
-    position: relative;
-  }
-  .tab:hover {
-    color: var(--text-secondary);
-  }
-  .tab.active {
-    color: #fff;
-    background: var(--accent);
-    box-shadow: 0 1px 6px var(--accent-glow);
-  }
-  .tab svg {
-    opacity: 0.6;
-  }
-  .tab.active svg {
-    opacity: 1;
-  }
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    -webkit-app-region: no-drag;
-  }
-  .version-badge {
-    font-size: 9px;
-    font-weight: 600;
-    color: var(--text-dim);
-    padding: 2px 7px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    letter-spacing: 0.3px;
-  }
-</style>

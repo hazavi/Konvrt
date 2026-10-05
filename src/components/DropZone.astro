@@ -1,240 +1,42 @@
 ---
+import Icon from "./Icon.astro";
+import "../styles/components/dropzone.css";
 
+const formats = [
+  { kind: "video", labels: ["MP4", "MKV", "MOV", "WEBM", "AVI", "TS"] },
+  { kind: "audio", labels: ["MP3", "WAV", "FLAC", "M4A", "OPUS"] },
+  { kind: "image", labels: ["JPG", "PNG", "WEBP", "AVIF", "GIF", "HEIC"] },
+  { kind: "pdf", labels: ["PDF"] },
+  { kind: "doc", labels: ["HTML", "MD", "TXT", "CSV", "JSON"] },
+] as const;
 ---
 
 <div id="dropzone">
   <div id="empty-state">
-    <div class="drop-visual">
-      <div class="drop-ring">
-        <div class="drop-ring-inner">
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="var(--accent)"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
-        </div>
+    <div class="drop-ring">
+      <div class="drop-ring-inner">
+        <Icon name="upload" size={32} stroke={1.5} />
       </div>
     </div>
     <h2 class="drop-title">Drop your files here</h2>
     <p class="drop-subtitle">
       or browse to select videos, audio, images, or PDFs
     </p>
-    <button id="browse-btn" class="browse-btn">
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        ><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"
-        ></path><polyline points="13 2 13 9 20 9"></polyline></svg
-      >
+    <button id="browse-btn" class="btn btn-outline browse-btn">
+      <Icon name="browse" size={14} />
       Browse Files
     </button>
     <div class="format-tags">
-      <span class="fmt-tag video">MP4</span>
-      <span class="fmt-tag video">MKV</span>
-      <span class="fmt-tag video">MOV</span>
-      <span class="fmt-tag video">WEBM</span>
-      <span class="fmt-tag video">AVI</span>
-      <span class="fmt-tag video">TS</span>
-      <span class="fmt-tag audio">MP3</span>
-      <span class="fmt-tag audio">WAV</span>
-      <span class="fmt-tag audio">FLAC</span>
-      <span class="fmt-tag audio">M4A</span>
-      <span class="fmt-tag audio">OPUS</span>
-      <span class="fmt-tag image">JPG</span>
-      <span class="fmt-tag image">PNG</span>
-      <span class="fmt-tag image">WEBP</span>
-      <span class="fmt-tag image">AVIF</span>
-      <span class="fmt-tag image">GIF</span>
-      <span class="fmt-tag image">HEIC</span>
-      <span class="fmt-tag pdf">PDF</span>
-      <span class="fmt-tag doc">HTML</span>
-      <span class="fmt-tag doc">MD</span>
-      <span class="fmt-tag doc">TXT</span>
-      <span class="fmt-tag doc">CSV</span>
-      <span class="fmt-tag doc">JSON</span>
-      <span class="fmt-tag">+50 more</span>
+      {
+        formats.flatMap(({ kind, labels }) =>
+          labels.map((label) => (
+            <span class="badge" data-kind={kind}>
+              {label}
+            </span>
+          )),
+        )
+      }
+      <span class="badge">+50 more</span>
     </div>
   </div>
 </div>
-
-<style>
-  #dropzone {
-    border: 1.5px dashed var(--border-hover);
-    border-radius: var(--radius);
-    background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    min-height: 0;
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-  }
-  #dropzone::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(
-      ellipse at 50% 0%,
-      rgba(124, 108, 240, 0.06) 0%,
-      transparent 60%
-    );
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-  }
-  #dropzone:hover::before {
-    opacity: 1;
-  }
-  #dropzone.has-files {
-    min-height: 0;
-    flex: 0 0 auto;
-    padding: 0;
-    border: none;
-    background: transparent;
-  }
-  #dropzone.has-files::before {
-    display: none;
-  }
-  #dropzone.drag-over {
-    border-color: var(--accent);
-    background: rgba(124, 108, 240, 0.04);
-    transform: scale(1.003);
-    box-shadow: inset 0 0 30px var(--accent-glow);
-  }
-  #dropzone.drag-over::before {
-    opacity: 1;
-  }
-
-  #empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 32px 20px;
-    text-align: center;
-    position: relative;
-    z-index: 1;
-  }
-
-  .drop-visual {
-    margin-bottom: 6px;
-  }
-  .drop-ring {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    border: 1.5px dashed var(--border-hover);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: pulse-ring 3.5s ease-in-out infinite;
-  }
-  .drop-ring-inner {
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: var(--surface-2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  @keyframes pulse-ring {
-    0%,
-    100% {
-      border-color: var(--border-hover);
-      transform: scale(1);
-    }
-    50% {
-      border-color: var(--accent);
-      transform: scale(1.03);
-    }
-  }
-
-  .drop-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text);
-    letter-spacing: -0.3px;
-  }
-  .drop-subtitle {
-    font-size: 12px;
-    color: var(--text-dim);
-    margin-top: -2px;
-  }
-
-  .browse-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 4px;
-    padding: 8px 20px;
-    border: 1px solid var(--border-hover);
-    border-radius: var(--radius-md);
-    background: var(--surface-2);
-    color: var(--text);
-    font-size: 12.5px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition);
-  }
-  .browse-btn:hover {
-    border-color: var(--accent);
-    background: var(--accent-glow);
-    box-shadow: 0 0 16px var(--accent-glow);
-  }
-
-  .format-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    justify-content: center;
-    margin-top: 10px;
-    max-width: 480px;
-  }
-  .fmt-tag {
-    font-size: 9px;
-    font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 4px;
-    background: var(--surface-2);
-    color: var(--text-dim);
-    letter-spacing: 0.4px;
-  }
-  .fmt-tag.video {
-    background: var(--video-bg);
-    color: var(--video-color);
-  }
-  .fmt-tag.audio {
-    background: var(--audio-bg);
-    color: var(--audio-color);
-  }
-  .fmt-tag.image {
-    background: var(--image-bg);
-    color: var(--image-color);
-  }
-  .fmt-tag.pdf {
-    background: var(--pdf-bg);
-    color: var(--pdf-color);
-  }
-  .fmt-tag.doc {
-    background: var(--doc-bg);
-    color: var(--doc-color);
-  }
-</style>

@@ -1,0 +1,148 @@
+#file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.file-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: default;
+  transition: all var(--transition);
+  animation: slide-up 0.25s ease-out;
+}
+.file-card:hover {
+  background: var(--accent);
+  border-color: var(--input);
+}
+.file-card.done {
+  background: linear-gradient(135deg, var(--success-bg), transparent 60%);
+  border-color: color-mix(in srgb, var(--success) 20%, transparent);
+}
+.file-card.error {
+  background: linear-gradient(135deg, var(--destructive-bg), transparent 60%);
+  border-color: color-mix(in srgb, var(--destructive) 20%, transparent);
+}
+.file-card.converting {
+  background: linear-gradient(135deg, var(--primary-glow), transparent 60%);
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+  animation: progress-glow 2s ease-in-out infinite;
+}
+
+/* Thumbnail */
+.file-thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+.file-thumb:hover {
+  border-color: var(--primary);
+}
+.file-thumb img,
+.file-thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.thumb-label {
+  color: var(--tone);
+  font-size: 11px;
+  font-weight: 800;
+  opacity: 0.6;
+}
+.play-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  opacity: 0;
+  backdrop-filter: blur(1px);
+  transition: opacity var(--transition);
+}
+.file-thumb:hover .play-overlay {
+  opacity: 1;
+}
+
+/* Details */
+.file-details {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.file-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.file-name {
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.file-meta {
+  font-size: 10.5px;
+  color: var(--muted-foreground);
+}
+.done-format {
+  animation: success-pop 0.35s ease-out;
+}
+
+/* Status */
+.file-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.file-progress {
+  width: 80px;
+  height: 3px;
+}
+.progress-pct {
+  min-width: 32px;
+  color: var(--primary-light);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.status-icon {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  background: color-mix(in srgb, var(--tone) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tone) 20%, transparent);
+  border-radius: 50%;
+  color: var(--tone);
+  animation: success-pop 0.35s ease-out;
+}
+
+.remove-btn {
+  width: 22px;
+  height: 22px;
+  opacity: 0;
+}
+.file-card:hover .remove-btn {
+  opacity: 1;
+}
+.remove-btn:disabled {
+  opacity: 0 !important;
+}

@@ -1,20 +1,12 @@
-import type { FileEntry } from "./types";
+import { api } from "./api";
 import { FORMAT_OPTIONS } from "./constants";
+import { $ } from "./dom";
 import { detectType, getExt } from "./helpers";
 import {
   files, selectedType, targetFormat, conversionMode,
-  setSelectedType, setTargetFormat,
+  setTargetFormat, updateSelectedType,
 } from "./state";
 import { render, renderFileList } from "./render";
-
-export function updateSelectedType() {
-  if (files.length === 0) {
-    setSelectedType(null);
-    return;
-  }
-  const types = new Set(files.map((f) => f.type));
-  setSelectedType(types.size === 1 ? files[0].type : "video");
-}
 
 export function addFiles(paths: string[]) {
   const newPaths: string[] = [];
@@ -36,26 +28,22 @@ export function addFiles(paths: string[]) {
     newPaths.push(p);
   }
   updateSelectedType();
+
   if (!targetFormat && selectedType) {
     if (conversionMode !== "compress") {
       setTargetFormat(FORMAT_OPTIONS[selectedType]?.[0] || "");
     }
-    const sel = document.getElementById("format-select") as HTMLSelectElement;
-    if (sel && targetFormat) sel.value = targetFormat;
+    if (targetFormat) $<HTMLSelectElement>("format-select").value = targetFormat;
   }
   render();
 
-  // Fetch file sizes asynchronously
   if (newPaths.length > 0) {
-    const api = (window as any).konvrt;
-    if (api && api.getFileSizes) {
-      api.getFileSizes(newPaths).then((sizes: Record<string, number>) => {
-        for (const [fp, size] of Object.entries(sizes)) {
-          const file = files.find((f) => f.path === fp);
-          if (file) file.size = size as number;
-        }
-        renderFileList();
-      });
-    }
+    api?.getFileSizes(newPaths).then((sizes) => {
+      for (const [path, size] of Object.entries(sizes)) {
+        const file = files.find((f) => f.path === path);
+        if (file) file.size = size;
+      }
+      renderFileList();
+    });
   }
 }

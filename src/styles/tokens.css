@@ -1,0 +1,53 @@
+:root {
+  color-scheme: dark;
+
+  /* shadcn/ui semantic palette (dark) */
+  --background: #06060b;
+  --foreground: #eef0f6;
+  --card: #0e0e16;
+  --popover: #1a1a28;
+  --primary: #7c6cf0;
+  --primary-hover: #8d7ff5;
+  --primary-light: #a494ff;
+  --primary-foreground: #fff;
+  --secondary: #141420;
+  --secondary-foreground: #a2a2c0;
+  --muted: #141420;
+  --muted-foreground: #7a7a9a;
+  --accent: #1c1c2e;
+  --destructive: #f87171;
+  --success: #34d399;
+  --success-strong: #059669;
+  --warning: #fbbf24;
+  --border: #1e1e30;
+  --input: #2e2e48;
+  --ring: var(--primary);
+
+  /* Tinted surfaces derived from the palette */
+  --primary-glow: color-mix(in srgb, var(--primary) 10%, transparent);
+  --primary-glow-strong: color-mix(in srgb, var(--primary) 25%, transparent);
+  --success-bg: color-mix(in srgb, var(--success) 8%, transparent);
+  --destructive-bg: color-mix(in srgb, var(--destructive) 8%, transparent);
+
+  /* File kinds */
+  --video: #818cf8;
+  --audio: #fb923c;
+  --image: #2dd4bf;
+  --gif: #f472b6;
+  --pdf: #ef4444;
+  --doc: #38bdf8;
+
+  --radius: 0.75rem;
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-sm: calc(var(--radius) - 6px);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+
+  --transition: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+  --font-sans: "Inter Variable", system-ui, -apple-system, sans-serif;
+  --font-mono: "SF Mono", "Fira Code", monospace;
+}

@@ -50,3 +50,18 @@ export function setDlOutputDir(d: string) { dlOutputDir = d; }
 export function setDlIsDownloading(v: boolean) { dlIsDownloading = v; }
 export function setDlVideoInfo(v: DlVideoInfo | null) { dlVideoInfo = v; }
 export function setPreviewIndex(i: number) { previewIndex = i; }
+
+// Derived state
+export function updateSelectedType() {
+  if (files.length === 0) {
+    selectedType = null;
+    return;
+  }
+  const types = new Set(files.map((f) => f.type));
+  selectedType = types.size === 1 ? files[0].type : "video";
+}
+
+export function applyMode(mode: typeof conversionMode) {
+  conversionMode = mode;
+  quality = mode === "compress" ? 85 : 80;
+}

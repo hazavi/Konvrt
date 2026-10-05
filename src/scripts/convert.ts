@@ -1,3 +1,4 @@
+import { api } from "./api";
 import {
   files, outputDir, targetFormat, quality, conversionMode,
   setIsConverting,
@@ -5,9 +6,7 @@ import {
 import { render, renderFileList, renderConvertBar } from "./render";
 
 export async function startConversion() {
-  const api = (window as any).konvrt;
   if (!api) return;
-  // Avoid re-entry from state module (isConverting is checked inline)
   setIsConverting(true);
   render();
 
@@ -20,12 +19,10 @@ export async function startConversion() {
     renderFileList();
     renderConvertBar();
 
-    const format = conversionMode === "compress" ? file.ext : targetFormat;
-
     const result = await api.convert({
       filePath: file.path,
       outputDir,
-      format,
+      format: conversionMode === "compress" ? file.ext : targetFormat,
       quality,
       mode: conversionMode,
     });
