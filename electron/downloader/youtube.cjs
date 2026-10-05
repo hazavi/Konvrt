@@ -4,14 +4,9 @@
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
-const _ffmpegPath = require('ffmpeg-static');
 
 const { ensureDir, getProxySetting, YTDLP_BIN } = require('./settings.cjs');
-
-// Resolve ffmpeg path — handle Electron asar packaging
-const ffmpegPath = _ffmpegPath
-  ? _ffmpegPath.replace(/\.asar([/\\])/, '.asar.unpacked$1')
-  : null;
+const { buildFormatArgs } = require('./formats.cjs');
 const { isYtDlpInstalled } = require('./ytdlp.cjs');
 
 // ── YouTube URL parsing ──────────────────────────────────────
@@ -154,41 +149,9 @@ async function downloadYouTube(job, onProgress) {
     throw new Error('yt-dlp is not installed. Click "Install yt-dlp" first.');
   }
 
-  const isAudio = ['mp3', 'aac', 'm4a', 'wav', 'flac', 'ogg', 'opus'].includes(format);
   const outputTemplate = path.join(outputDir, '%(title)s.%(ext)s');
 
-  const args = [ytUrl];
-
-  if (isAudio) {
-    const aq = quality === 'best' || quality === '1080' ? '0' : quality === '720' ? '3' : '5';
-    args.push('-x', '--audio-format', format, '--audio-quality', aq);
-  } else {
-    // Prefer container-native streams to avoid transcoding issues (no-sound bug).
-    // MP4 → prefer h264 video (ext=mp4) + AAC audio (ext=m4a)
-    // WEBM → prefer VP9 video (ext=webm) + Opus audio (ext=webm)
-    const isMp4 = format === 'mp4';
-    const isWebm = format === 'webm';
-    let formatSpec;
-    if (quality === 'best') {
-      if (isMp4) {
-        formatSpec = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best';
-      } else if (isWebm) {
-        formatSpec = 'bestvideo[ext=webm]+bestaudio[ext=webm]/bestvideo+bestaudio/best';
-      } else {
-        formatSpec = 'bestvideo+bestaudio/best';
-      }
-    } else {
-      const h = quality === '1080' ? '1080' : quality === '720' ? '720' : '480';
-      if (isMp4) {
-        formatSpec = `bestvideo[ext=mp4][height<=${h}]+bestaudio[ext=m4a]/bestvideo[height<=${h}]+bestaudio/best[height<=${h}]/best`;
-      } else if (isWebm) {
-        formatSpec = `bestvideo[ext=webm][height<=${h}]+bestaudio[ext=webm]/bestvideo[height<=${h}]+bestaudio/best[height<=${h}]/best`;
-      } else {
-        formatSpec = `bestvideo[height<=${h}]+bestaudio/best[height<=${h}]/best`;
-      }
-    }
-    args.push('-f', formatSpec, '--merge-output-format', format);
-  }
+  const args = [ytUrl, ...buildFormatArgs(format, quality)];
 
   args.push(
     '-o', outputTemplate,
@@ -204,7 +167,6 @@ async function downloadYouTube(job, onProgress) {
   );
 
   if (proxy) args.push('--proxy', proxy);
-  if (ffmpegPath) args.push('--ffmpeg-location', path.dirname(ffmpegPath));
 
   if (onProgress) onProgress({ percent: 1, totalSize: '', currentSpeed: '', eta: 'Starting yt-dlp...' });
 

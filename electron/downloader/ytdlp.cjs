@@ -5,14 +5,9 @@ const path = require('path');
 const fs = require('fs');
 const { execFile, spawn } = require('child_process');
 const YTDlpWrap = require('yt-dlp-wrap').default;
-const _ffmpegPath = require('ffmpeg-static');
 
 const { YTDLP_DIR, YTDLP_BIN, ensureDir, getProxySetting } = require('./settings.cjs');
-
-// Resolve ffmpeg path — handle Electron asar packaging
-const ffmpegPath = _ffmpegPath
-  ? _ffmpegPath.replace(/\.asar([/\\])/, '.asar.unpacked$1')
-  : null;
+const { buildFormatArgs } = require('./formats.cjs');
 
 let ytDlpInstance = null;
 
@@ -118,39 +113,9 @@ function downloadGenericMedia(job, onProgress) {
       return reject(new Error('yt-dlp is not installed'));
     }
 
-    const isAudio = ['mp3', 'aac', 'm4a', 'wav', 'flac', 'ogg', 'opus'].includes(format);
     const outputTemplate = path.join(outputDir, '%(title)s.%(ext)s');
 
-    const args = [url];
-
-    if (isAudio) {
-      const aq = quality === 'best' || quality === '1080' ? '0' : quality === '720' ? '3' : '5';
-      args.push('-x', '--audio-format', format, '--audio-quality', aq);
-    } else {
-      // Prefer container-native streams to avoid transcoding issues (no-sound bug).
-      const isMp4 = format === 'mp4';
-      const isWebm = format === 'webm';
-      let formatSpec;
-      if (quality === 'best') {
-        if (isMp4) {
-          formatSpec = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best';
-        } else if (isWebm) {
-          formatSpec = 'bestvideo[ext=webm]+bestaudio[ext=webm]/bestvideo+bestaudio/best';
-        } else {
-          formatSpec = 'bestvideo+bestaudio/best';
-        }
-      } else {
-        const h = quality === '1080' ? '1080' : quality === '720' ? '720' : '480';
-        if (isMp4) {
-          formatSpec = `bestvideo[ext=mp4][height<=${h}]+bestaudio[ext=m4a]/bestvideo[height<=${h}]+bestaudio/best[height<=${h}]/best`;
-        } else if (isWebm) {
-          formatSpec = `bestvideo[ext=webm][height<=${h}]+bestaudio[ext=webm]/bestvideo[height<=${h}]+bestaudio/best[height<=${h}]/best`;
-        } else {
-          formatSpec = `bestvideo[height<=${h}]+bestaudio/best[height<=${h}]/best`;
-        }
-      }
-      args.push('-f', formatSpec, '--merge-output-format', format);
-    }
+    const args = [url, ...buildFormatArgs(format, quality)];
 
     args.push(
       '-o', outputTemplate,
@@ -166,7 +131,6 @@ function downloadGenericMedia(job, onProgress) {
 
     const proxy = getProxySetting();
     if (proxy) args.push('--proxy', proxy);
-    if (ffmpegPath) args.push('--ffmpeg-location', path.dirname(ffmpegPath));
 
     let lastOutputPath = '';
     let hasResolved = false;

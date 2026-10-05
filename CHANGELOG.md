@@ -4,6 +4,16 @@ All notable changes to Konvrt are documented here.
 
 ---
 
+## [1.0.2] — 2026-10-05
+
+### Fixed
+- Video downloads no longer leave separate video/audio stream files behind; when ffmpeg is unavailable a single-file format is downloaded instead
+
+### Changed
+- UI restyled with shadcn-style design tokens and Lucide icons; styles split into per-component files
+
+---
+
 ## [1.0.0] — 2026-02-17
 
 ### Added
