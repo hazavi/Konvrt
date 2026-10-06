@@ -33,7 +33,7 @@
 .window-controls {
   display: flex;
   gap: 8px;
-  margin-left: 4px;
+  margin-left: 16px;
 }
 .window-controls[hidden] {
   display: none;
