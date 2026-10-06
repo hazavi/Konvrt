@@ -4,6 +4,8 @@
 
 # Konvrt
 
+[Open the browser version](https://hazavi.github.io/Konvrt/)
+
 Convert, compress, and download video, audio, images, and PDFs.
 Everything runs on your computer.
 

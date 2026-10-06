@@ -3,6 +3,8 @@ import Icon from "./Icon.astro";
 import pkg from "../../package.json";
 import "../styles/components/header.css";
 
+const logo = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/favicon.ico`;
+
 const tabs = [
   { id: "convert", label: "Convert" },
   { id: "compress", label: "Compress" },
@@ -14,7 +16,7 @@ const tabs = [
 <header class="app-header">
   <div class="header-left">
     <div class="brand">
-      <img class="logo" src="/favicon.ico" alt="Konvrt" width="32" height="32" />
+      <img class="logo" src={logo} alt="Konvrt" width="32" height="32" />
       <span class="brand-text">Konvrt</span>
     </div>
     <nav class="segmented" id="nav-tabs">
