@@ -1,6 +1,6 @@
 {
   "name": "konvrt",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Convert, compress, and download video, audio, images, and PDFs. Everything runs on your computer.",
   "type": "module",
   "main": "electron/main.cjs",

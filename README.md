@@ -79,11 +79,11 @@ npm start
 | `npm run build`        | Build the frontend and package the app        |
 
 On Windows you can also double-click `start-electron.bat` or `start-browser.bat`.
-The browser version can show the interface, but file picking, conversion, and downloads need Electron.
+The browser version can pick files and convert PNG, JPG, WebP, and ICO images locally. Video, audio, PDF, document conversion, and media downloads need Electron.
 
 ## Publishing a release
 
-1. Update `version` in `package.json` and add an entry to `CHANGELOG.md`.
+1. Update the version in `package.json` and `package-lock.json`, then add entries to `CHANGELOG.md` and `RELEASE_NOTES.md`.
 2. Create a release on GitHub.
 3. The **Build & Release** workflow builds the Windows installer and attaches `Konvrt-Setup-<version>.exe` to the release.
 

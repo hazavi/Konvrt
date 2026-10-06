@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const http = require('http');
 const fs = require('fs');
@@ -99,6 +99,14 @@ function createWindow() {
     autoHideMenuBar: true,
     backgroundColor: '#fff4d6',
     frame: false,
+  });
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url === 'https://github.com/hazavi/Konvrt') {
+      shell.openExternal(url);
+      return { action: 'deny' };
+    }
+    return { action: 'allow' };
   });
 
   mainWindow.on('maximize', () => mainWindow.webContents.send('window-maximized', true));

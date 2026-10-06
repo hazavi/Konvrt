@@ -4,6 +4,23 @@ All notable changes to Konvrt are documented here.
 
 ---
 
+## [1.0.3] — 2026-10-06
+
+### Added
+- Image resolution options with width, height, and Max, Crop, or Scale fit modes; ICO output supports selectable frames up to 256 × 256 pixels
+- Browser file picking, drag and drop, and local PNG, JPG, WebP, and ICO conversion
+- GitHub Pages browser frontend and a GitHub repository link beside the version badge
+
+### Fixed
+- Image options dialog now opens and stays centered
+- Conversion footer stays on one row at the desktop app's minimum window width
+- App, installer, browser favicon, and header logo use the same `favicon.ico`
+
+### Changed
+- Header logo enlarged to 32 pixels
+
+---
+
 ## [1.0.2] — 2026-10-05
 
 ### Fixed
@@ -70,6 +87,6 @@ All notable changes to Konvrt are documented here.
 ### Planned
 - Download Manager — queue, pause/resume, show in folder
 - Linux & macOS builds (`.AppImage`, `.deb`, `.dmg`)
-- More Tools — trim video, extract audio, crop/resize images, merge PDFs, watermark
+- More Tools — trim video, extract audio, merge PDFs, watermark
 - Drag & Drop file reordering in conversion queue
 - Auto-Update — in-app update notifications and one-click install
