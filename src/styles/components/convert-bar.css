@@ -22,7 +22,8 @@
 }
 
 .bar-inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 14px;
 }
@@ -30,25 +31,31 @@
 .bar-right {
   display: flex;
   align-items: center;
-  flex-shrink: 0;
 }
 .bar-left {
   gap: 10px;
+  min-width: 0;
 }
 .bar-right {
   gap: 8px;
+  justify-self: end;
 }
 .bar-center {
   display: flex;
-  flex: 1;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 14px;
+  min-width: 0;
 }
 .bar-field {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+.browser-conversion-note {
+  margin: 8px 0 0;
+  color: var(--muted-foreground);
+  font-size: 11px;
 }
 
 .stats {
@@ -228,4 +235,28 @@
   font-weight: 700;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1050px) {
+  #convert-bar { padding: 10px 12px; }
+  .bar-inner,
+  .bar-center { gap: 8px; }
+  .bar-left { gap: 6px; }
+  .stats {
+    max-width: 65px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bar-chip { max-width: 92px; padding-inline: 6px; }
+  #add-files-btn,
+  #image-options-btn { padding-inline: 7px; }
+  .slider-wrap { width: 65px; }
+  #mode-field > .field-label { display: none; }
+  #mode-toggle .segmented-item { padding-inline: 6px; }
+  #image-options-btn {
+    max-width: 105px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #convert-bar:has(#format-tabs.visible) #mode-field { display: none; }
 }

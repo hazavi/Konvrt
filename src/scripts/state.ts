@@ -1,10 +1,11 @@
-import type { FileEntry, DlVideoInfo, DlHistoryEntry } from "./types";
+import type { FileEntry, DlVideoInfo, DlHistoryEntry, ImageOptions } from "./types";
 
 // Converter state
 export let files: FileEntry[] = [];
 export let outputDir = "";
 export let targetFormat = "";
 export let quality = 80;
+export let imageOptions: ImageOptions = { width: null, height: null, fit: "max" };
 export let isConverting = false;
 export let selectedType: "video" | "audio" | "image" | "pdf" | "document" | null = null;
 export let currentTab: "convert" | "compress" | "tools" | "download" = "convert";
@@ -35,6 +36,7 @@ export function setFiles(f: FileEntry[]) { files = f; }
 export function setOutputDir(d: string) { outputDir = d; }
 export function setTargetFormat(f: string) { targetFormat = f; }
 export function setQuality(q: number) { quality = q; }
+export function setImageOptions(options: ImageOptions) { imageOptions = options; }
 export function setIsConverting(v: boolean) { isConverting = v; }
 export function setSelectedType(t: typeof selectedType) { selectedType = t; }
 export function setCurrentTab(t: typeof currentTab) { currentTab = t; }

@@ -11,6 +11,13 @@ export interface FileEntry {
   error?: string;
   outputPath?: string;
   previewUrl?: string;
+  browserFile?: File;
+}
+
+export interface ImageOptions {
+  width: number | null;
+  height: number | null;
+  fit: "max" | "crop" | "scale";
 }
 
 export interface DlHistoryEntry {

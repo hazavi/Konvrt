@@ -14,6 +14,7 @@ const qualityGuide = [
   <div class="bar-inner">
     <div class="bar-left">
       <span id="stats-label" class="stats">0 files</span>
+      <button id="add-files-btn" class="btn btn-outline btn-sm" type="button">Add files</button>
       <div class="bar-divider"></div>
       <button
         id="output-dir-btn"
@@ -76,6 +77,10 @@ const qualityGuide = [
         </div>
       </div>
 
+      <button id="image-options-btn" class="btn btn-outline btn-sm" type="button" style="display:none;">
+        Image options
+      </button>
+
       <div class="bar-field" id="mode-field">
         <label class="field-label">Mode</label>
         <div class="segmented segmented-sm" id="mode-toggle">
@@ -99,6 +104,8 @@ const qualityGuide = [
       </button>
     </div>
   </div>
+
+  <p id="browser-conversion-note" class="browser-conversion-note" style="display:none;"></p>
 
   <div id="overall-progress" class="overall-progress" style="display:none;">
     <div class="progress">

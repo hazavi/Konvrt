@@ -1,6 +1,6 @@
 import {
   files, outputDir, targetFormat, quality, isConverting, selectedType,
-  currentTab, conversionMode, formatSubTab, toolsView,
+  currentTab, conversionMode, formatSubTab, toolsView, imageOptions,
   toolsCatConvert, toolsCatCompress,
   setTargetFormat, applyMode, setCurrentTab, updateSelectedType,
 } from "./state";
@@ -10,6 +10,8 @@ import { escapeHtml, formatSize, getPreviewUrl, normalizeExt, truncatePath } fro
 import { $ } from "./dom";
 import { icon } from "./icons";
 import { openPreview } from "./preview";
+import { releaseBrowserFiles } from "./file-ops";
+import { api } from "./api";
 import type { FileEntry, ToolEntry } from "./types";
 
 // -- Orchestrator --
@@ -78,7 +80,7 @@ const doneFormatHtml = (fmt: string) =>
 
 function thumbHtml(f: FileEntry): string {
   if (f.type === "image" || f.type === "video") {
-    const url = getPreviewUrl(f.path);
+    const url = f.previewUrl ?? getPreviewUrl(f.path);
     const media = f.type === "image"
       ? `<img src="${url}" alt="" loading="lazy" />`
       : `<video src="${url}" muted preload="metadata"></video>`;
@@ -143,7 +145,7 @@ function initFileList() {
     const removeBtn = target.closest<HTMLElement>(".remove-btn");
     if (removeBtn) {
       const idx = files.findIndex((f) => f.id === removeBtn.dataset.id);
-      if (idx !== -1) files.splice(idx, 1);
+      if (idx !== -1) releaseBrowserFiles(files.splice(idx, 1));
       updateSelectedType();
       render();
       return;
@@ -182,7 +184,10 @@ function renderFormatField() {
   const sourceExt = exts.size === 1 ? normalizeExt([...exts][0]) : null;
 
   const isVideo = selectedType === "video";
-  const list = isVideo && formatSubTab === "audio" ? FORMAT_OPTIONS.videoAudio : FORMAT_OPTIONS[selectedType];
+  const available = isVideo && formatSubTab === "audio" ? FORMAT_OPTIONS.videoAudio : FORMAT_OPTIONS[selectedType];
+  const list = !api && selectedType === "image"
+    ? available.filter((format) => ["png", "jpg", "webp", "ico"].includes(format))
+    : available;
 
   formatTabs.classList.toggle("visible", isVideo);
   if (isVideo) {
@@ -193,7 +198,7 @@ function renderFormatField() {
 
   fillFormatSelect(
     $<HTMLSelectElement>("format-select"),
-    sourceExt ? list.filter((f) => normalizeExt(f) !== sourceExt) : list,
+    sourceExt && selectedType !== "image" ? list.filter((f) => normalizeExt(f) !== sourceExt) : list,
   );
   formatField.style.display = "flex";
 }
@@ -213,6 +218,14 @@ export function renderConvertBar() {
 
   renderFormatField();
 
+  const optionsBtn = $<HTMLButtonElement>("image-options-btn");
+  optionsBtn.style.display = selectedType === "image" ? "inline-flex" : "none";
+  optionsBtn.disabled = isConverting;
+  optionsBtn.textContent = imageOptions.width || imageOptions.height
+    ? `Size: ${imageOptions.width ?? "auto"} × ${imageOptions.height ?? "auto"}`
+    : "Image options";
+  optionsBtn.title = optionsBtn.textContent;
+
   $("slider-fill").style.width = `${quality}%`;
   $<HTMLInputElement>("quality-slider").value = String(quality);
   $("quality-value").textContent = `${quality}%`;
@@ -220,7 +233,15 @@ export function renderConvertBar() {
 
   const allDone = files.every((f) => f.status === "done" || f.status === "error");
   const convertBtn = $<HTMLButtonElement>("convert-btn");
-  convertBtn.disabled = isConverting || !outputDir || (conversionMode === "convert" && !targetFormat);
+  const browserFormats = ["png", "jpg", "jpeg", "webp", "ico"];
+  const browserSupported = selectedType === "image" && (conversionMode === "compress"
+    ? files.every((file) => browserFormats.includes(file.ext.toLowerCase()))
+    : browserFormats.includes(targetFormat));
+  convertBtn.disabled = isConverting || !outputDir || (conversionMode === "convert" && !targetFormat)
+    || (!api && !browserSupported);
+  const browserNote = $("browser-conversion-note");
+  browserNote.style.display = !api && !browserSupported ? "block" : "none";
+  browserNote.textContent = "Browser conversion supports PNG, JPG, WebP, and ICO images. Use the desktop app for other formats.";
   convertBtn.classList.toggle("is-busy", isConverting);
   convertBtn.classList.toggle("is-done", !isConverting && allDone);
 

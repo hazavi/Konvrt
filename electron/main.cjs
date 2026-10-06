@@ -84,8 +84,8 @@ function waitForServer(url, maxRetries = 50, interval = 500) {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1100,
-    height: 750,
+    width: 1150,
+    height: 800,
     minWidth: 900,
     minHeight: 600,
     title: 'Konvrt',

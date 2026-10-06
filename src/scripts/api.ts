@@ -1,4 +1,4 @@
-import type { DlVideoInfo } from "./types";
+import type { DlVideoInfo, ImageOptions } from "./types";
 
 interface Outcome {
   success: boolean;
@@ -19,6 +19,7 @@ export interface KonvrtApi {
     format: string;
     quality: number;
     mode: "convert" | "compress";
+    imageOptions?: ImageOptions;
   }): Promise<Outcome & { outputPath?: string }>;
   getFileSizes(paths: string[]): Promise<Record<string, number>>;
   onProgress(cb: (data: { filePath: string; progress: number }) => void): void;

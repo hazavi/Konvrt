@@ -46,7 +46,7 @@ function getMediaType(filePath) {
 // ── Processing entry point ────────────────────────────────────
 
 async function processFile(job, onProgress) {
-  const { filePath, outputDir, format, quality, mode } = job;
+  const { filePath, outputDir, format, quality, mode, imageOptions } = job;
   const mediaType = getMediaType(filePath);
   const baseName = path.basename(filePath, path.extname(filePath));
   const isCompress = mode === 'compress';
@@ -89,7 +89,7 @@ async function processFile(job, onProgress) {
     case 'audio':
       return convertAudio(filePath, safePath, outputFormat, quality, onProgress, isCompress);
     case 'image':
-      return convertImage(filePath, safePath, outputFormat, quality, onProgress, isCompress);
+      return convertImage(filePath, safePath, outputFormat, quality, onProgress, isCompress, imageOptions);
     default:
       throw new Error(`Unsupported file type: ${path.extname(filePath)}`);
   }
@@ -188,13 +188,38 @@ function extractAudioFromVideo(input, output, format, quality, onProgress) {
 
 // ── Image conversion ──────────────────────────────────────────
 
-async function convertImage(input, output, format, quality, onProgress, isCompress) {
+function normalizeImageOptions(options, format) {
+  const width = options?.width ?? null;
+  const height = options?.height ?? null;
+  const max = format === 'ico' ? 256 : 16384;
+  for (const value of [width, height]) {
+    if (value !== null && (!Number.isInteger(value) || value < 1 || value > max)) {
+      throw new Error(`Image dimensions must be whole numbers between 1 and ${max} px`);
+    }
+  }
+  const fit = options?.fit ?? 'max';
+  if (!['max', 'crop', 'scale'].includes(fit)) throw new Error('Invalid image fit option');
+  return { width, height, fit };
+}
+
+function resizeImage(pipeline, { width, height, fit }) {
+  if (!width && !height) return pipeline;
+  const settings = fit === 'crop'
+    ? { fit: 'cover' }
+    : fit === 'scale'
+      ? { fit: 'fill' }
+      : { fit: 'inside', withoutEnlargement: true };
+  return pipeline.resize(width, height, settings);
+}
+
+async function convertImage(input, output, format, quality, onProgress, isCompress, imageOptions) {
   onProgress(10);
 
   const fmt = format.toLowerCase();
+  const options = normalizeImageOptions(imageOptions, fmt);
 
   if (SHARP_OUTPUT.has(fmt)) {
-    let pipeline = sharp(input);
+    let pipeline = resizeImage(sharp(input), options);
 
     // For compress mode, use smart compression without destroying quality
     let effectiveQuality = Math.round(quality);
@@ -246,7 +271,8 @@ async function convertImage(input, output, format, quality, onProgress, isCompre
   if (JIMP_OUTPUT.has(fmt)) {
     // Fallback to Jimp for BMP and other formats Sharp doesn't write
     onProgress(20);
-    const image = await Jimp.read(input);
+    const png = await resizeImage(sharp(input), options).png().toBuffer();
+    const image = await Jimp.read(png);
     onProgress(60);
     await image.write(output);
     onProgress(100);
@@ -254,11 +280,11 @@ async function convertImage(input, output, format, quality, onProgress, isCompre
   }
 
   if (fmt === 'ico') {
-    return convertImageToIco(input, output, onProgress);
+    return convertImageToIco(input, output, onProgress, options);
   }
 
   if (fmt === 'svg') {
-    return convertImageToSvg(input, output, onProgress);
+    return convertImageToSvg(input, output, onProgress, options);
   }
 
   throw new Error(`Unsupported image output format: ${format}`);
@@ -266,19 +292,20 @@ async function convertImage(input, output, format, quality, onProgress, isCompre
 
 // ── Image → SVG conversion (raster embed) ─────────────────────
 
-async function convertImageToSvg(input, output, onProgress) {
+async function convertImageToSvg(input, output, onProgress, options) {
   try {
     onProgress(10);
 
     // First flatten alpha (screenshots may have transparency) and ensure 8-bit sRGB
-    const pipeline = sharp(input).flatten({ background: { r: 255, g: 255, b: 255 } }).toColorspace('srgb');
-    const metadata = await sharp(input).metadata();
-    const width = metadata.width || 800;
-    const height = metadata.height || 600;
+    const pipeline = resizeImage(sharp(input), options)
+      .flatten({ background: { r: 255, g: 255, b: 255 } }).toColorspace('srgb');
     onProgress(30);
 
     // Convert to PNG buffer for embedding
     const pngBuffer = await pipeline.png({ compressionLevel: 6 }).toBuffer();
+    const metadata = await sharp(pngBuffer).metadata();
+    const width = metadata.width;
+    const height = metadata.height;
     onProgress(60);
 
     const base64 = pngBuffer.toString('base64');
@@ -300,17 +327,30 @@ async function convertImageToSvg(input, output, onProgress) {
 
 // ── Image → ICO conversion ────────────────────────────────────
 
-async function convertImageToIco(input, output, onProgress) {
+async function convertImageToIco(input, output, onProgress, options) {
   // Standard ICO sizes (largest first for best quality)
-  const sizes = [256, 128, 64, 48, 32, 16];
+  let sizes = [256, 128, 64, 48, 32, 16].map((size) => ({ width: size, height: size }));
+  if (options.width || options.height) {
+    const metadata = await sharp(input).metadata();
+    const ratio = metadata.width / metadata.height;
+    const width = options.width ?? Math.max(1, Math.round(options.height * ratio));
+    const height = options.height ?? Math.max(1, Math.round(options.width / ratio));
+    if (width > 256 || height > 256) throw new Error('ICO dimensions cannot exceed 256 px');
+    sizes = [{ width, height }];
+  }
   onProgress(10);
 
   // Generate PNG buffers at each size
   const pngBuffers = [];
   for (let i = 0; i < sizes.length; i++) {
-    const size = sizes[i];
+    const { width, height } = sizes[i];
+    const fit = options.fit === 'crop' ? 'cover' : options.fit === 'scale' ? 'fill' : 'contain';
     const buf = await sharp(input)
-      .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .resize(width, height, {
+        fit,
+        withoutEnlargement: options.fit === 'max' && Boolean(options.width || options.height),
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      })
       .png()
       .toBuffer();
     pngBuffers.push(buf);
@@ -333,10 +373,10 @@ async function convertImageToIco(input, output, onProgress) {
   // ICONDIRENTRY array
   const dirEntries = Buffer.alloc(dirSize);
   for (let i = 0; i < numImages; i++) {
-    const size = sizes[i];
+    const { width, height } = sizes[i];
     const offset = i * dirEntrySize;
-    dirEntries.writeUInt8(size >= 256 ? 0 : size, offset);      // width (0 = 256)
-    dirEntries.writeUInt8(size >= 256 ? 0 : size, offset + 1);  // height (0 = 256)
+    dirEntries.writeUInt8(width === 256 ? 0 : width, offset);    // width (0 = 256)
+    dirEntries.writeUInt8(height === 256 ? 0 : height, offset + 1); // height (0 = 256)
     dirEntries.writeUInt8(0, offset + 2);                        // color palette
     dirEntries.writeUInt8(0, offset + 3);                        // reserved
     dirEntries.writeUInt16LE(1, offset + 4);                     // color planes

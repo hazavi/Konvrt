@@ -1,0 +1,29 @@
+---
+import "../styles/components/image-options.css";
+---
+
+<dialog id="image-options-dialog" aria-labelledby="image-options-title">
+  <form id="image-options-form">
+    <div class="image-options-header">
+      <h2 id="image-options-title">Image options</h2>
+      <button id="image-options-close" class="btn btn-ghost btn-icon" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="image-options-body">
+      <h3>Resolution</h3>
+      <div class="image-size-fields">
+        <label>Width <span class="image-size-input"><input id="image-width" type="number" min="1" max="16384" step="1" placeholder="Original" /> px</span></label>
+        <label>Height <span class="image-size-input"><input id="image-height" type="number" min="1" max="16384" step="1" placeholder="Original" /> px</span></label>
+      </div>
+      <p id="image-size-hint" class="image-options-hint">Leave both blank to keep the original dimensions.</p>
+      <fieldset>
+        <legend>Fit</legend>
+        <label><input type="radio" name="image-fit" value="max" checked /> <span><strong>Max</strong><small>Fit within width and height without enlarging smaller images.</small></span></label>
+        <label><input type="radio" name="image-fit" value="crop" /> <span><strong>Crop</strong><small>Fill width and height and crop any excess.</small></span></label>
+        <label><input type="radio" name="image-fit" value="scale" /> <span><strong>Scale</strong><small>Use the exact width and height, stretching if needed.</small></span></label>
+      </fieldset>
+    </div>
+    <div class="image-options-footer">
+      <button class="btn btn-primary" type="submit">Apply</button>
+    </div>
+  </form>
+</dialog>

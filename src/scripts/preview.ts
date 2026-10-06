@@ -5,9 +5,10 @@ import { $ } from "./dom";
 const getPreviewableFiles = () => files.filter((f) => isPreviewable(f.type));
 
 export function openPreview(filePath: string, type: string) {
-  const url = getPreviewUrl(filePath);
-  const name = filePath.split(/[\\/]/).pop() || "";
-  const size = files.find((f) => f.path === filePath)?.size;
+  const file = files.find((f) => f.path === filePath);
+  const url = file?.previewUrl ?? getPreviewUrl(filePath);
+  const name = file?.name ?? filePath.split(/[\\/]/).pop() ?? "";
+  const size = file?.size;
   const previewable = getPreviewableFiles();
   const idx = previewable.findIndex((f) => f.path === filePath);
   setPreviewIndex(idx);
