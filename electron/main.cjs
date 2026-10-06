@@ -89,7 +89,7 @@ function createWindow() {
     minWidth: 900,
     minHeight: 600,
     title: 'Konvrt',
-    icon: path.join(__dirname, '..', 'public', 'konvrt_ico.ico'),
+    icon: path.join(__dirname, '..', isDev ? 'public' : 'dist', 'favicon.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,

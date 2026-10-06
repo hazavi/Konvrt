@@ -34,16 +34,16 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "public/konvrt_ico.ico",
+      "icon": "public/favicon.ico",
       "artifactName": "Konvrt-Setup-${version}.${ext}"
     },
     "mac": {
       "target": "dmg",
-      "icon": "public/konvrt_ico.ico"
+      "icon": "public/favicon.ico"
     },
     "linux": {
       "target": "AppImage",
-      "icon": "public/konvrt_ico.ico"
+      "icon": "public/favicon.ico"
     }
   },
   "dependencies": {
