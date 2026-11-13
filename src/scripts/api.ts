@@ -6,7 +6,21 @@ interface Outcome {
 }
 
 /** Bridge exposed by electron/preload.cjs. */
+export interface UpdateState {
+  status: 'idle' | 'disabled' | 'checking' | 'current' | 'available' | 'downloading' | 'ready' | 'installing' | 'error';
+  currentVersion: string;
+  version?: string;
+  percent?: number;
+  error?: string;
+}
+
 export interface KonvrtApi {
+  getDroppedPaths(files: File[]): Promise<string[]>;
+  updateStatus(): Promise<UpdateState>;
+  updateCheck(): Promise<UpdateState>;
+  updateDownload(): Promise<UpdateState>;
+  updateInstall(): Promise<Outcome>;
+  onUpdateState(cb: (state: UpdateState) => void): () => void;
   windowMinimize(): Promise<void>;
   windowToggleMaximize(): Promise<void>;
   windowClose(): Promise<void>;

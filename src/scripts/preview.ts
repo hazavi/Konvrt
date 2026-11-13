@@ -15,9 +15,15 @@ export function openPreview(filePath: string, type: string) {
   const counter = previewable.length > 1 ? `${idx + 1} / ${previewable.length}` : "";
 
   if (type === "image") {
-    $("preview-body").innerHTML = `<img src="${url}" alt="${escapeHtml(name)}" />`;
+    const image = document.createElement('img');
+    image.src = url;
+    image.alt = name;
+    $("preview-body").replaceChildren(image);
   } else if (type === "video") {
-    $("preview-body").innerHTML = `<video src="${url}" controls autoplay></video>`;
+    const video = document.createElement('video');
+    video.src = url;
+    video.controls = video.autoplay = true;
+    $("preview-body").replaceChildren(video);
   }
   $("preview-info").innerHTML =
     `<span class="preview-counter">${counter}</span>` +

@@ -45,7 +45,7 @@ export function isPreviewable(type: string): boolean {
 }
 
 export function getPreviewUrl(filePath: string): string {
-  return "file:///" + filePath.replace(/\\/g, "/");
+  return "konvrt-media://local/" + encodeURIComponent(filePath);
 }
 
 export function formatDuration(seconds: number): string {

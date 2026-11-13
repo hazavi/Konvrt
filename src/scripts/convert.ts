@@ -1,12 +1,13 @@
 import { api } from "./api";
 import {
-  files, outputDir, targetFormat, quality, conversionMode, imageOptions,
+  files, outputDir, targetFormat, quality, conversionMode, imageOptions, isConverting,
   setIsConverting,
 } from "./state";
 import { render, renderFileList, renderConvertBar } from "./render";
 import { convertBrowserImage } from "./browser-convert";
 
 export async function startConversion() {
+  if (isConverting) return;
   setIsConverting(true);
   render();
 

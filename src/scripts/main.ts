@@ -13,6 +13,7 @@ import { startConversion } from "./convert";
 import { checkYtDlpAndRender, initDownload } from "./download";
 import { isPreviewOpen, closePreview, navigatePreview } from "./preview";
 import { showToast } from "./toast";
+import { initUpdates } from "./updates";
 
 function initNavigation() {
   onClick("#nav-tabs .tab", (btn) => {
@@ -48,11 +49,11 @@ function initDropZone() {
   dropTarget.addEventListener("dragleave", (e) => {
     if (!dropTarget.contains(e.relatedTarget as Node)) zone.classList.remove("drag-over");
   });
-  dropTarget.addEventListener("drop", (e) => {
+  dropTarget.addEventListener("drop", async (e) => {
     e.preventDefault();
     zone.classList.remove("drag-over");
     const dropped = Array.from(e.dataTransfer?.files ?? []) as (File & { path?: string })[];
-    if (api) addFiles(dropped.map((f) => f.path).filter((p): p is string => Boolean(p)));
+    if (api) addFiles(await api.getDroppedPaths(dropped));
     else addBrowserFiles(dropped);
   });
 }
@@ -190,6 +191,7 @@ function initWindowControls() {
 export function init() {
   if (!api) setOutputDir("Downloads");
   initWindowControls();
+  initUpdates();
   initNavigation();
   initDropZone();
   initConvertBar();

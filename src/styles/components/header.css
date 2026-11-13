@@ -29,6 +29,15 @@
 .github-link {
   flex-shrink: 0;
 }
+.update-button { font-size: 11px; white-space: nowrap; padding: 4px 6px; }
+.update-button[hidden] { display: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 1050px) {
+  .app-header { padding-left: 12px; padding-right: 12px; }
+  .header-left { gap: 10px; }
+  .window-controls { margin-left: 4px; gap: 5px; }
+  .brand-text { display: none; }
+}
 
 .window-controls {
   display: flex;

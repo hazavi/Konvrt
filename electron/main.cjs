@@ -1,252 +1,192 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
-const path = require('path');
-const http = require('http');
-const fs = require('fs');
-const { processFile } = require('./converter.cjs');
-const { isDownloadReady, installDownloadTools, getVideoInfo, downloadMedia, getProxySetting, setProxySetting } = require('./downloader/index.cjs');
+﻿const { app, BrowserWindow, ipcMain, dialog, shell, screen, protocol, net } = require('electron');
+const path = require('node:path');
+const http = require('node:http');
+const fs = require('node:fs');
+const { pathToFileURL } = require('node:url');
+const { startStaticServer } = require('./static-server.cjs');
+const { loadWindowState, trackWindowState } = require('./window-state.cjs');
+const { localPath, validateJob, mediaUrl } = require('./security.cjs');
+const { createUpdater } = require('./updater.cjs');
 
-let mainWindow;
-let prodServer;
+let mainWindow, prodServer, trustedOrigin, updater;
+let activeJobs = 0;
+const approvedFiles = new Set();
+const approvedDirs = new Set();
 const isDev = !app.isPackaged;
 const DEV_URL = 'http://localhost:4321';
+const downloader = () => require('./downloader/index.cjs');
+protocol.registerSchemesAsPrivileged([{ scheme: 'konvrt-media', privileges: {
+  standard: true, secure: true, supportFetchAPI: true, stream: true,
+} }]);
 
-// ── Static file server for production builds ───────────────────
-const MIME_TYPES = {
-  '.html': 'text/html',
-  '.css': 'text/css',
-  '.js': 'application/javascript',
-  '.mjs': 'application/javascript',
-  '.json': 'application/json',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.gif': 'image/gif',
-  '.webp': 'image/webp',
-  '.woff': 'font/woff',
-  '.woff2': 'font/woff2',
-  '.ttf': 'font/ttf',
-};
-
-function startStaticServer(distPath) {
-  return new Promise((resolve) => {
-    const server = http.createServer((req, res) => {
-      const urlPath = decodeURIComponent(req.url.split('?')[0]);
-      let filePath = path.join(distPath, urlPath === '/' ? 'index.html' : urlPath);
-
-      // Security: prevent path traversal
-      if (!filePath.startsWith(distPath)) {
-        res.writeHead(403); res.end(); return;
-      }
-
-      fs.readFile(filePath, (err, data) => {
-        if (err) {
-          // Fallback to index.html for SPA-like routes
-          if (err.code === 'ENOENT') {
-            res.writeHead(404); res.end();
-          } else {
-            res.writeHead(500); res.end();
-          }
-          return;
-        }
-        const ext = path.extname(filePath).toLowerCase();
-        res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
-        res.end(data);
-      });
-    });
-    server.listen(0, '127.0.0.1', () => {
-      const port = server.address().port;
-      console.log(`[Konvrt] Static server running on http://127.0.0.1:${port}`);
-      resolve(server);
-    });
-  });
+function send(channel, data) {
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send(channel, data);
 }
 
-function waitForServer(url, maxRetries = 50, interval = 500) {
+function waitForServer(url, attempts = 50) {
   return new Promise((resolve, reject) => {
-    let attempts = 0;
     const check = () => {
-      attempts++;
-      http.get(url, (res) => {
-        resolve();
-      }).on('error', () => {
-        if (attempts >= maxRetries) {
-          reject(new Error(`Dev server not available after ${maxRetries} attempts`));
-        } else {
-          setTimeout(check, interval);
-        }
+      const req = http.get(url, res => { res.resume(); resolve(); });
+      req.setTimeout(2000, () => req.destroy(new Error('Dev server timeout')));
+      req.on('error', err => {
+        if (--attempts <= 0) reject(err);
+        else setTimeout(check, 500);
       });
     };
     check();
   });
 }
 
-function createWindow() {
+async function createWindow() {
+  const stateFile = path.join(app.getPath('userData'), 'window-state.json');
+  const state = loadWindowState(stateFile, screen.getAllDisplays());
   mainWindow = new BrowserWindow({
-    width: 1150,
-    height: 800,
-    minWidth: 900,
-    minHeight: 600,
-    title: 'Konvrt',
+    ...state, show: false, minWidth: 900, minHeight: 600,
+    title: 'Konvrt', frame: false, autoHideMenuBar: true, backgroundColor: '#ffefbd',
     icon: path.join(__dirname, '..', isDev ? 'public' : 'dist', 'favicon.ico'),
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.cjs'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      webSecurity: false, // Allow loading local file:// previews
-    },
-    autoHideMenuBar: true,
-    backgroundColor: '#fff4d6',
-    frame: false,
+    webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true,
+      nodeIntegration: false, webSecurity: true, sandbox: true, webviewTag: false },
   });
-
+  // Constructor bounds can gain invisible frame pixels at fractional DPI on
+  // Windows. Restore the saved client size explicitly before tracking changes.
+  mainWindow.setContentSize(state.width, state.height);
+  trackWindowState(mainWindow, stateFile);
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (url === 'https://github.com/hazavi/Konvrt') {
-      shell.openExternal(url);
-      return { action: 'deny' };
-    }
-    return { action: 'allow' };
+    if (url === 'https://github.com/hazavi/Konvrt') shell.openExternal(url).catch(console.error);
+    return { action: 'deny' };
   });
-
-  mainWindow.on('maximize', () => mainWindow.webContents.send('window-maximized', true));
-  mainWindow.on('unmaximize', () => mainWindow.webContents.send('window-maximized', false));
-
-  if (isDev) {
-    console.log('[Konvrt] Waiting for Astro dev server...');
-    waitForServer(DEV_URL)
-      .then(() => {
-        console.log('[Konvrt] Dev server ready, loading app.');
-        mainWindow.loadURL(DEV_URL);
-      })
-      .catch((err) => {
-        console.error('[Konvrt]', err.message);
-        console.error('[Konvrt] Make sure to run: npm run dev:astro');
-        app.quit();
-      });
-  } else {
-    const distPath = path.join(__dirname, '..', 'dist');
-    startStaticServer(distPath).then((server) => {
-      prodServer = server;
-      const port = server.address().port;
-      console.log('[Konvrt] Loading production build...');
-      mainWindow.loadURL(`http://127.0.0.1:${port}`);
-    });
-  }
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (new URL(url).origin !== trustedOrigin) event.preventDefault();
+  });
+  mainWindow.webContents.session.setPermissionRequestHandler((_wc, _permission, callback) => callback(false));
+  mainWindow.webContents.session.setPermissionCheckHandler(() => false);
+  mainWindow.once('ready-to-show', () => {
+    if (state.maximized) mainWindow.maximize();
+    mainWindow.show();
+  });
+  mainWindow.on('maximize', () => send('window-maximized', true));
+  mainWindow.on('unmaximize', () => send('window-maximized', false));
+  mainWindow.webContents.on('did-finish-load', () => send('window-maximized', mainWindow.isMaximized()));
+  try {
+    if (isDev) {
+      trustedOrigin = new URL(DEV_URL).origin;
+      await waitForServer(DEV_URL);
+    } else {
+      if (!prodServer) prodServer = await startStaticServer(path.join(__dirname, '..', 'dist'));
+      trustedOrigin = `http://127.0.0.1:${prodServer.address().port}`;
+    }
+    await mainWindow.loadURL(isDev ? DEV_URL : trustedOrigin);
+  } catch (err) { console.error('[Konvrt]', err); app.quit(); }
 }
 
-app.whenReady().then(createWindow);
-
-app.on('window-all-closed', () => {
-  if (prodServer) prodServer.close();
-  if (process.platform !== 'darwin') app.quit();
-});
-
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
-});
-
-// ── IPC Handlers ──────────────────────────────────────────────
-
-ipcMain.handle('window-minimize', () => mainWindow?.minimize());
-ipcMain.handle('window-toggle-maximize', () => {
-  if (!mainWindow) return;
-  if (mainWindow.isMaximized()) mainWindow.unmaximize();
-  else mainWindow.maximize();
-});
-ipcMain.handle('window-close', () => mainWindow?.close());
-
-ipcMain.handle('select-files', async () => {
-  const result = await dialog.showOpenDialog(mainWindow, {
-    properties: ['openFile', 'multiSelections'],
-    filters: [
-      { name: 'Media Files', extensions: [
-        'mp4','mkv','avi','mov','webm','flv','wmv','ts','m2ts','mts','3gp','ogv','vob','mpg','mpeg','m4v','divx','asf','rm','rmvb','f4v',
-        'mp3','wav','ogg','flac','aac','wma','m4a','opus','alac','aiff','ape','ac3','dts','amr','au','ra','wv',
-        'jpg','jpeg','png','gif','bmp','tiff','tif','webp','svg','avif','heic','heif','ico','jxl','jp2','psd','raw','cr2','nef','dng',
-        'pdf'
-      ]},
-    ],
+if (!app.requestSingleInstanceLock()) app.quit();
+else app.whenReady().then(() => {
+  approvedDirs.add(path.resolve(app.getPath('downloads')));
+  protocol.handle('konvrt-media', request => {
+    try {
+      const file = localPath(decodeURIComponent(new URL(request.url).pathname.slice(1)));
+      if (!approvedFiles.has(file) || !/\.(png|jpe?g|webp|gif|bmp|svg|avif|ico|mp4|webm|mov|m4v|ogg)$/i.test(file)) return new Response('', { status: 403 });
+      return net.fetch(pathToFileURL(file).href, { headers: request.headers });
+    } catch { return new Response('', { status: 400 }); }
   });
-  return result.canceled ? [] : result.filePaths;
+  createWindow();
+  updater = createUpdater({ app, getWindow: () => mainWindow, isBusy: () => activeJobs > 0 });
 });
+app.on('second-instance', () => {
+  if (mainWindow?.isMinimized()) mainWindow.restore();
+  mainWindow?.focus();
+});
+app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+app.on('before-quit', () => { updater?.dispose(); prodServer?.close(); });
+app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 
-ipcMain.handle('select-output-dir', async () => {
-  const result = await dialog.showOpenDialog(mainWindow, {
-    properties: ['openDirectory', 'createDirectory'],
+function handle(channel, callback) {
+  ipcMain.handle(channel, (event, ...args) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents || event.senderFrame !== mainWindow.webContents.mainFrame ||
+      new URL(event.senderFrame.url).origin !== trustedOrigin) throw new Error('Untrusted IPC sender.');
+    return callback(event, ...args);
   });
-  return result.canceled ? null : result.filePaths[0];
+}
+
+function outputDirectory(value) {
+  const dir = localPath(value);
+  if (!approvedDirs.has(dir)) throw new Error('Choose an output folder first.');
+  return dir;
+}
+
+async function runJob(work) {
+  if (activeJobs) return { success: false, error: 'Another operation is already running.' };
+  activeJobs++;
+  try { return await work(); }
+  catch (err) { return { success: false, error: err.message }; }
+  finally { activeJobs--; }
+}
+
+handle('window-minimize', () => mainWindow.minimize());
+handle('window-toggle-maximize', () => mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize());
+handle('window-close', () => mainWindow.close());
+handle('update-status', () => updater.getState());
+handle('update-check', () => updater.check());
+handle('update-download', () => updater.download());
+handle('update-install', () => updater.install());
+handle('register-dropped-files', (_event, paths) => {
+  if (!Array.isArray(paths) || paths.length > 1000) throw new Error('Too many files.');
+  return paths.map(localPath).filter(file => { approvedFiles.add(file); return true; });
 });
-
-ipcMain.handle('convert', async (event, job) => {
-  // job: { filePath, outputDir, format, quality, mode }
-  try {
-    const result = await processFile(job, (progress) => {
-      mainWindow.webContents.send('conversion-progress', {
-        filePath: job.filePath,
-        progress,
-      });
-    });
-    return { success: true, outputPath: result };
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
+handle('select-files', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, { properties: ['openFile', 'multiSelections'] });
+  const paths = result.canceled ? [] : result.filePaths;
+  paths.forEach(file => approvedFiles.add(path.resolve(file)));
+  return paths;
 });
-
-// ── Download IPC Handlers ──────────────────────────────────────
-
-ipcMain.handle('ytdlp-check', async () => {
-  return isDownloadReady();
+handle('select-output-dir', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, { properties: ['openDirectory', 'createDirectory'] });
+  const dir = result.canceled ? null : result.filePaths[0];
+  if (dir) approvedDirs.add(path.resolve(dir));
+  return dir;
 });
-
-ipcMain.handle('ytdlp-install', async () => {
-  try {
-    await installDownloadTools((progress) => {
-      mainWindow.webContents.send('ytdlp-install-progress', progress);
-    });
-    return { success: true };
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
+handle('convert', (_event, job) => runJob(async () => {
+  validateJob(job);
+  if (!approvedFiles.has(localPath(job.filePath))) throw new Error('Select the input file first.');
+  outputDirectory(job.outputDir);
+  const { processFile } = require('./converter.cjs');
+  let lastProgress = -1;
+  const result = await processFile(job, progress => {
+    const rounded = Math.round(progress);
+    if (rounded === lastProgress) return;
+    lastProgress = rounded;
+    send('conversion-progress', { filePath: job.filePath, progress: rounded });
+  });
+  return { success: true, outputPath: result };
+}));
+handle('ytdlp-check', () => downloader().isDownloadReady());
+handle('ytdlp-install', () => runJob(async () => {
+  await downloader().installDownloadTools(progress => send('ytdlp-install-progress', progress));
+  return { success: true };
+}));
+handle('ytdlp-info', async (_event, url) => {
+  try { return await downloader().getVideoInfo(mediaUrl(url)); }
+  catch (err) { return { success: false, error: err.message }; }
 });
-
-ipcMain.handle('ytdlp-info', async (event, url) => {
-  return getVideoInfo(url);
-});
-
-ipcMain.handle('ytdlp-download', async (event, job) => {
-  // job: { url, outputDir, format, quality }
-  try {
-    const result = await downloadMedia(job, (progress) => {
-      mainWindow.webContents.send('download-progress', {
-        url: job.url,
-        ...progress,
-      });
-    });
-    return result;
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
-});
-
-ipcMain.handle('get-proxy', async () => {
-  return getProxySetting();
-});
-
-ipcMain.handle('set-proxy', async (event, proxy) => {
-  setProxySetting(proxy);
+handle('ytdlp-download', (_event, job) => runJob(async () => {
+  mediaUrl(job.url);
+  outputDirectory(job.outputDir);
+  if (!['mp4','webm','mp3','m4a','wav','flac','ogg','opus','aac'].includes(job.format) ||
+    !['best','1080','720','480'].includes(job.quality)) throw new Error('Invalid download options.');
+  return downloader().downloadMedia(job, progress => send('download-progress', { url: job.url, ...progress }));
+}));
+handle('get-proxy', () => downloader().getProxySetting());
+handle('set-proxy', (_event, proxy) => {
+  if (typeof proxy !== 'string' || proxy.length > 2048) throw new Error('Invalid proxy.');
+  if (proxy.trim() && !['http:', 'https:', 'socks4:', 'socks5:', 'socks5h:'].includes(new URL(proxy.trim()).protocol)) throw new Error('Invalid proxy protocol.');
+  downloader().setProxySetting(proxy);
   return { success: true };
 });
-
-ipcMain.handle('get-file-sizes', async (event, filePaths) => {
-  const sizes = {};
-  for (const fp of filePaths) {
-    try {
-      const stat = fs.statSync(fp);
-      sizes[fp] = stat.size;
-    } catch {
-      sizes[fp] = 0;
-    }
-  }
-  return sizes;
+handle('get-file-sizes', async (_event, paths) => {
+  if (!Array.isArray(paths) || paths.length > 1000) throw new Error('Invalid file list.');
+  return Object.fromEntries(await Promise.all(paths.map(async fp => {
+    const file = localPath(fp);
+    if (!approvedFiles.has(file)) throw new Error('Select the file first.');
+    try { return [fp, (await fs.promises.stat(file)).size]; } catch { return [fp, 0]; }
+  })));
 });
