@@ -4,6 +4,27 @@ All notable changes to Konvrt are documented here.
 
 ---
 
+## [1.1.0] — 2026-11-13
+
+### Added
+- Persistent window size, position, and maximized state with off-screen recovery
+- GitHub release checks, download progress, and explicit restart-to-update for Windows
+- Regression tests and Windows CI for window state, updater lifecycle, security, and BMP encoding
+
+### Changed
+- Slightly darker yellow and cream palette
+- Chromium sandbox and web security enabled; restricted navigation, permissions, IPC, and local previews
+- TLS certificate verification restored; streaming downloads, bounded logs, asynchronous file stats, and lazy conversion loading
+- Updated Electron, Astro, image/PDF libraries, and build dependencies; removed Jimp and duplicate FFmpeg packaging
+- Release workflow publishes update metadata and blockmaps with the installer
+
+### Fixed
+- Drag and drop uses the supported Electron file-path API
+- Download idle timers are cleared on exit and interrupted processes report failure
+- Conversion options reject output-format path traversal
+
+---
+
 ## [1.0.3] — 2026-10-06
 
 ### Added

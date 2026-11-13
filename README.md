@@ -9,7 +9,7 @@
 Convert, compress, and download video, audio, images, and PDFs.
 Everything runs on your computer.
 
-![Electron](https://img.shields.io/badge/Electron-33-47848F?logo=electron&logoColor=white)
+![Electron](https://img.shields.io/badge/Electron-45-47848F?logo=electron&logoColor=white)
 ![Platform](https://img.shields.io/badge/platform-Windows-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -25,6 +25,14 @@ Everything runs on your computer.
 1. Open the [latest release](https://github.com/hazavi/Konvrt/releases/latest).
 2. Download `Konvrt-Setup-<version>.exe`.
 3. Run the installer.
+
+## Updates and window settings
+
+Konvrt remembers window size, position, and maximized state. If a saved monitor is disconnected, the window opens on an available display.
+
+The installed Windows app checks this repository for stable releases 15 seconds after launch and every six hours. Use **Check updates** beside the version to check manually, the **Get** button to download, and **Restart & update** when ready. Finish any conversion or download before restarting.
+
+Updates use the NSIS installer to replace the existing installation and restart Konvrt. Window settings and download-tool settings are preserved. Do not uninstall the app separately before updating. Versions up to 1.0.3 need a one-time manual install of 1.1.0 to gain the updater.
 
 ## What it does
 
@@ -60,7 +68,7 @@ The interface uses a Neobrutalism design: thick black borders, hard offset shado
 
 ## Development
 
-You need [Node.js](https://nodejs.org/) 18 or newer.
+You need [Node.js](https://nodejs.org/) 24 or newer.
 
 ```sh
 git clone https://github.com/hazavi/Konvrt.git
@@ -76,7 +84,8 @@ npm start
 | `npm start`            | Astro dev server and Electron together        |
 | `npm run dev:astro`    | Frontend only, at `http://localhost:4321`     |
 | `npm run dev:electron` | Electron only (needs the Astro server)        |
-| `npm run build`        | Build the frontend and package the app        |
+| `npm run build`        | Build the frontend and Windows installer      |
+| `npm test`             | Run conversion, window-state, security, and updater tests |
 
 On Windows you can also double-click `start-electron.bat` or `start-browser.bat`.
 The browser version can pick files and convert PNG, JPG, WebP, and ICO images locally. Video, audio, PDF, document conversion, and media downloads need Electron.
@@ -85,7 +94,9 @@ The browser version can pick files and convert PNG, JPG, WebP, and ICO images lo
 
 1. Update the version in `package.json` and `package-lock.json`, then add entries to `CHANGELOG.md` and `RELEASE_NOTES.md`.
 2. Create a release on GitHub.
-3. The **Build & Release** workflow builds the Windows installer and attaches `Konvrt-Setup-<version>.exe` to the release.
+3. Publish the release. The **Build & Release** workflow runs tests, builds the Windows installer, and attaches `Konvrt-Setup-<version>.exe`, its `.blockmap`, and `latest.yml`. All three files are required for in-app updates. The release tag must match `v<package version>`.
+
+The updater uses HTTPS and verifies the installer SHA-512 against release metadata. The project currently ships unsigned Windows installers; publisher signature verification requires configuring a Windows signing certificate in CI. Keep repository release permissions restricted.
 
 To build locally, run `npm run build:astro` then `npx electron-builder --win`. The installer ends up in `release/`.
 
@@ -94,9 +105,9 @@ To build locally, run `npm run build:astro` then `npx electron-builder --win`. T
 | Layer       | Technology                              |
 | :---------- | :-------------------------------------- |
 | Interface   | Astro, Lucide icons (as used by 21st.dev), Neobrutalism CSS, Space Grotesk |
-| Desktop     | Electron 33                             |
+| Desktop     | Electron 45                             |
 | Video/Audio | FFmpeg (fluent-ffmpeg)                  |
-| Images      | Sharp, Jimp                             |
+| Images      | Sharp, built-in BMP writer                             |
 | PDF         | MuPDF, PDFKit                           |
 | Downloads   | yt-dlp                                  |
 
@@ -146,7 +157,7 @@ Planned features and improvements for future releases:
 - [ ] **Linux and macOS Builds** -- Tested and signed native packages (.AppImage, .deb, .dmg)
 - [ ] **More Tools** -- Trim video, extract audio, crop/resize images, merge PDFs, watermark
 - [ ] **Drag and Drop Reorder** -- Reorder files in the conversion queue
-- [ ] **Auto-Update** -- In-app update notifications and one-click install
+- [x] **Auto-Update** -- GitHub release checks, download progress, and restart to install (Windows)
 
 
 ## License
