@@ -59,9 +59,9 @@ async function getYouTubeInfo(url) {
     const args = [
       canonicalUrl,
       '--dump-json',
+      '--ignore-config',
       '--no-playlist',
       '--no-warnings',
-      '--no-check-certificates',
       '--socket-timeout', '20',
     ];
 
@@ -155,9 +155,9 @@ async function downloadYouTube(job, onProgress) {
 
   args.push(
     '-o', outputTemplate,
-    '--no-playlist',
+    '--ignore-config',
+      '--no-playlist',
     '--no-warnings',
-    '--no-check-certificates',
     '--newline',
     '--progress',
     '--geo-bypass',
@@ -230,7 +230,7 @@ async function downloadYouTube(job, onProgress) {
     let stdoutBuf = '';
     proc.stdout.on('data', (chunk) => {
       const text = chunk.toString();
-      allOutput += text;
+      allOutput = (allOutput + text).slice(-65536);
       stdoutBuf += text;
       const lines = stdoutBuf.split(/\r?\n/);
       stdoutBuf = lines.pop();
@@ -240,7 +240,7 @@ async function downloadYouTube(job, onProgress) {
     let stderrBuf = '';
     proc.stderr.on('data', (chunk) => {
       const text = chunk.toString();
-      allOutput += text;
+      allOutput = (allOutput + text).slice(-65536);
       stderrBuf += text;
       const lines = stderrBuf.split(/\r?\n/);
       stderrBuf = lines.pop();
@@ -255,12 +255,14 @@ async function downloadYouTube(job, onProgress) {
     proc.on('close', (code) => {
       if (idleTimer) clearTimeout(idleTimer);
       if (stdoutBuf) parseLine(stdoutBuf);
+      if (idleTimer) clearTimeout(idleTimer);
       if (stderrBuf) parseLine(stderrBuf);
+      if (idleTimer) clearTimeout(idleTimer);
 
       if (hasResolved) return;
       hasResolved = true;
 
-      if (code !== 0 && code !== null) {
+      if (code !== 0) {
         const errLine = allOutput.split('\n').find(l => /ERROR/i.test(l));
         let errorMsg = errLine || `yt-dlp exited with code ${code}`;
         if (/timed?\s*out|ETIMEDOUT|connect.*fail/i.test(allOutput) && !proxy) {

@@ -1,140 +1,93 @@
-/**
- * HTTP utilities — GET, POST, file download with progress, redirect handling.
- */
-const https = require('https');
-const fs = require('fs');
+const https = require('node:https');
+const fs = require('node:fs');
+const { pipeline } = require('node:stream/promises');
 
-/**
- * Quick HTTPS GET that returns a string. Follows redirects.
- */
-function httpGet(url, timeout = 10000) {
+function response(url, headers = {}, redirects = 0, timeout = 30000) {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, { timeout }, (res) => {
+    const target = new URL(url);
+    if (target.protocol !== 'https:') return reject(new Error('Downloads require HTTPS.'));
+    if (redirects > 5) return reject(new Error('Too many redirects.'));
+    const req = https.get(target, { headers: { 'User-Agent': 'Konvrt', ...headers }, timeout }, res => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return httpGet(res.headers.location, timeout).then(resolve, reject);
+        res.resume();
+        const next = new URL(res.headers.location, target);
+        return response(next, next.origin === target.origin ? headers : {}, redirects + 1, timeout).then(resolve, reject);
       }
-      let data = '';
-      res.on('data', (chunk) => data += chunk);
-      res.on('end', () => resolve(data));
+      if (res.statusCode !== 200) {
+        res.resume(); return reject(new Error(`HTTP ${res.statusCode}`));
+      }
+      resolve(res);
     });
     req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('HTTP timeout')); });
+    req.on('timeout', () => req.destroy(new Error('Connection timed out.')));
   });
 }
 
-/**
- * HTTPS POST that returns a string.
- */
+async function httpGet(url, timeout = 10000) {
+  const res = await response(url, {}, 0, timeout);
+  let size = 0;
+  const chunks = [];
+  for await (const chunk of res) {
+    size += chunk.length;
+    if (size > 10 * 1024 * 1024) { res.destroy(); throw new Error('Response is too large.'); }
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks).toString('utf8');
+}
+
 function httpsPost(hostname, urlPath, body, timeout = 10000) {
   return new Promise((resolve, reject) => {
     const data = typeof body === 'string' ? body : JSON.stringify(body);
-    const req = https.request({
-      hostname, path: urlPath, method: 'POST', timeout,
+    const req = https.request({ hostname, path: urlPath, method: 'POST', timeout,
       headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) },
-    }, (res) => {
-      let result = '';
-      res.on('data', (chunk) => result += chunk);
-      res.on('end', () => resolve(result));
+    }, async res => {
+      try {
+        if (res.statusCode < 200 || res.statusCode >= 300) { res.resume(); throw new Error(`HTTP ${res.statusCode}`); }
+        let size = 0;
+        const chunks = [];
+        for await (const chunk of res) {
+          size += chunk.length;
+          if (size > 10 * 1024 * 1024) { res.destroy(); throw new Error('Response is too large.'); }
+          chunks.push(chunk);
+        }
+        resolve(Buffer.concat(chunks).toString('utf8'));
+      } catch (err) { reject(err); }
     });
     req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('HTTP timeout')); });
-    req.write(data);
-    req.end();
+    req.on('timeout', () => req.destroy(new Error('Connection timed out.')));
+    req.end(data);
   });
 }
 
-/**
- * Download a URL to a file with progress callback. Follows redirects.
- * Includes stall detection and SSL workaround for corporate networks.
- */
-function downloadToFile(url, destPath, onProgress, customHeaders) {
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    function fail(err) { if (!settled) { settled = true; reject(err); } }
-
-    function doGet(targetUrl, redirectCount = 0) {
-      if (redirectCount > 5) return fail(new Error('Too many redirects'));
-      const parsedUrl = new URL(targetUrl);
-      const reqOpts = {
-        hostname: parsedUrl.hostname,
-        path: parsedUrl.pathname + parsedUrl.search,
-        timeout: 30000,
-        rejectUnauthorized: false,
-        headers: customHeaders || {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-          'Accept-Encoding': 'identity',
-          'Connection': 'keep-alive',
-        },
-      };
-
-      const req = https.get(reqOpts, (res) => {
-        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-          return doGet(res.headers.location, redirectCount + 1);
-        }
-        if (res.statusCode !== 200 && res.statusCode !== 206) {
-          return fail(new Error(`HTTP ${res.statusCode} downloading stream`));
-        }
-
-        const totalBytes = parseInt(
-          res.headers['content-length'] || res.headers['content-range']?.split('/')?.pop() || '0', 10
-        );
-        let downloaded = 0;
-        const file = fs.createWriteStream(destPath);
-        const startTime = Date.now();
-
-        // Stall detection: if no data for 30s during download, abort
-        const stallTimer = setInterval(() => {
-          if (downloaded === 0 && Date.now() - startTime > 30000) {
-            clearInterval(stallTimer);
-            req.destroy();
-            file.destroy();
-            fail(new Error('Download stalled -- no data received'));
-          }
-        }, 5000);
-
-        res.on('data', (chunk) => {
-          downloaded += chunk.length;
-          file.write(chunk);
-          if (onProgress && totalBytes > 0) {
-            onProgress(downloaded, totalBytes);
-          }
-        });
-
-        res.on('end', () => {
-          clearInterval(stallTimer);
-          file.end(() => { if (!settled) { settled = true; resolve(destPath); } });
-        });
-
-        res.on('error', (err) => {
-          clearInterval(stallTimer);
-          file.destroy();
-          fail(err);
-        });
-      });
-
-      req.on('error', fail);
-      req.on('timeout', () => { req.destroy(); fail(new Error('Connection timeout')); });
+async function downloadToFile(url, destPath, onProgress, customHeaders) {
+  const res = await response(url, customHeaders);
+  const partial = destPath + '.part';
+  const total = Number(res.headers['content-length']) || 0;
+  let received = 0;
+  let lastProgress = 0;
+  res.on('data', chunk => {
+    received += chunk.length;
+    if (onProgress && total && Date.now() - lastProgress >= 100) {
+      lastProgress = Date.now(); onProgress(received, total);
     }
-
-    doGet(url);
   });
+  try {
+    // pipeline applies backpressure and rejects on truncated responses or disk errors.
+    await pipeline(res, fs.createWriteStream(partial, { flags: 'wx' }));
+    await fs.promises.rename(partial, destPath);
+    if (onProgress && total) onProgress(received, total);
+    return destPath;
+  } catch (err) {
+    await fs.promises.rm(partial, { force: true }).catch(() => {});
+    throw err;
+  }
 }
 
-/**
- * Format bytes into human-readable string.
- */
 function formatBytes(bytes) {
-  if (!bytes || bytes === 0) return '';
+  if (!bytes) return '';
   const units = ['B', 'KB', 'MB', 'GB'];
   let i = 0;
-  let b = bytes;
-  while (b >= 1024 && i < units.length - 1) { b /= 1024; i++; }
-  return b.toFixed(1) + ' ' + units[i];
+  while (bytes >= 1024 && i < units.length - 1) { bytes /= 1024; i++; }
+  return bytes.toFixed(1) + ' ' + units[i];
 }
-
-module.exports = {
-  httpGet,
-  httpsPost,
-  downloadToFile,
-  formatBytes,
-};
+module.exports = { httpGet, httpsPost, downloadToFile, formatBytes };

@@ -2,11 +2,12 @@ const path = require('path');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
 const sharp = require('sharp');
-const { Jimp } = require('jimp');
+const { writeBmp } = require('./bmp.cjs');
 const fs = require('fs');
 const PDFDocument = require('pdfkit');
+const { validateJob } = require('./security.cjs');
 
-ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfmpegPath(ffmpegPath?.replace(/\.asar([/\\])/, '.asar.unpacked$1'));
 
 // Lazy-load mupdf (ESM-only, loaded via dynamic import)
 let _mupdf = null;
@@ -30,8 +31,7 @@ const VIDEO_OUTPUT_FORMATS = new Set(['mp4','mkv','avi','mov','webm','flv','wmv'
 
 // Formats Sharp handles natively
 const SHARP_OUTPUT = new Set(['jpg','jpeg','png','webp','avif','tiff','gif','heif']);
-// Formats we fall back to Jimp for
-const JIMP_OUTPUT = new Set(['bmp']);
+
 
 function getMediaType(filePath) {
   const ext = path.extname(filePath).toLowerCase();
@@ -46,6 +46,7 @@ function getMediaType(filePath) {
 // ── Processing entry point ────────────────────────────────────
 
 async function processFile(job, onProgress) {
+  validateJob(job);
   const { filePath, outputDir, format, quality, mode, imageOptions } = job;
   const mediaType = getMediaType(filePath);
   const baseName = path.basename(filePath, path.extname(filePath));
@@ -268,13 +269,9 @@ async function convertImage(input, output, format, quality, onProgress, isCompre
     return output;
   }
 
-  if (JIMP_OUTPUT.has(fmt)) {
-    // Fallback to Jimp for BMP and other formats Sharp doesn't write
+  if (fmt === 'bmp') {
     onProgress(20);
-    const png = await resizeImage(sharp(input), options).png().toBuffer();
-    const image = await Jimp.read(png);
-    onProgress(60);
-    await image.write(output);
+    await writeBmp(resizeImage(sharp(input), options), output);
     onProgress(100);
     return output;
   }
@@ -450,8 +447,7 @@ async function convertPdfToImage(input, output, format, quality, onProgress) {
         case 'tiff': sharpPipeline.tiff({ quality: opts.quality }); break;
         case 'gif': sharpPipeline.gif(); break;
         case 'bmp':
-          const jimpImg = await Jimp.read(Buffer.from(imgBuffer));
-          await jimpImg.write(pageOutput);
+          await writeBmp(sharp(Buffer.from(imgBuffer)), pageOutput);
           outputPaths.push(pageOutput);
           onProgress(Math.round(15 + ((i + 1) / pageCount) * 85));
           continue;
