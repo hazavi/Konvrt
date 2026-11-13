@@ -2,7 +2,7 @@
   color-scheme: light;
 
   /* Neobrutalism palette (shadcn semantic names, as used by 21st.dev) */
-  --background: #fff4d6;
+  --background: #ffefbd;
   --foreground: #000;
   --card: #fff;
   --popover: #fff;
@@ -10,7 +10,7 @@
   --primary-hover: #b9a2fc;
   --primary-light: #4c2bd9;
   --primary-foreground: #000;
-  --secondary: #fde68a;
+  --secondary: #f5d565;
   --secondary-foreground: #000;
   --muted: #fff9e8;
   --muted-foreground: #3d3d3d;
